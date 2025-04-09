@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "@fontsource/jetbrains-mono";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  base: true;
+  root: ":root";
+  utils: true;
+  logs: true;
+}
+body {
+  font-family: "JetBrains Mono";
+}

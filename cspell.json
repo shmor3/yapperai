@@ -1,0 +1,17 @@
+{
+  "version": "0.2",
+  "ignorePaths": [
+    "node_modules",
+    ".cache",
+    ".react-router",
+    "build",
+    ".husky",
+    ".vscode",
+    ".cspell"
+  ],
+  "dictionaryDefinitions": [],
+  "dictionaries": ["./.cspell/dictionary"],
+  "words": [],
+  "ignoreWords": [],
+  "import": []
+}
