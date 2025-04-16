@@ -1,6 +1,7 @@
 node = "23.9.0"
 npm = "11.2.0"
 pnpm = "10.7.0"
+rust = "latest"
 
 [env]
 debug = "*"
