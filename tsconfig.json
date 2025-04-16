@@ -1,0 +1,40 @@
+{
+	"include": ["client"],
+	"exclude": ["node_modules"],
+	"compilerOptions": {
+		"lib": ["DOM", "DOM.Iterable", "ES2022"],
+		"types": ["@react-router/node", "vite/client"],
+		"target": "ES2022",
+		"module": "ESNEXT",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"experimentalDecorators": true,
+		"jsx": "react-jsx",
+		"baseUrl": ".",
+		"paths": {
+			"@client/*": ["./client/*"],
+			"@server/*": ["./server/*"],
+			"@shared/*": ["./shared/*"],
+			"@state": ["./state"],
+			"@utils/*": ["./utils/*"],
+			"@rr/*": ["./.react-router/types/client/*"]
+		},
+		"forceConsistentCasingInFileNames": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedParameters": true,
+		"noUnusedLocals": true,
+		"allowImportingTsExtensions": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"allowJs": true,
+		"rootDirs": [".", "./.react-router/types"],
+		"plugins": [{ "name": "@react-router/dev" }]
+	},
+	"ts-node": {
+		"experimentalSpecifierResolution": "node"
+	}
+}

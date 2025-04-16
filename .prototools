@@ -1,0 +1,17 @@
+node = "23.9.0"
+npm = "11.2.0"
+pnpm = "10.7.0"
+
+[env]
+debug = "*"
+
+[settings]
+auto-clean = true
+auto-install = true
+builtin-plugins = true
+detect-strategy = "prefer-prototools"
+pin-latest = "local"
+telemetry = false
+
+[settings.offline]
+timeout = 500

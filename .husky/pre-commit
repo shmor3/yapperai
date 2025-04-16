@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+bash <<EOF
+  pnpm lint-staged \
+    || exit 1 \
+    && git update-index --again \
+    || exit 1
+EOF
+    # && echo "pnpm commitlint --edit \$1" > .husky/commit-msg \
