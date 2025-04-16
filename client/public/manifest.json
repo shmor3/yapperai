@@ -1,0 +1,9 @@
+{
+	"$schema": "https://json.schemastore.org/web-manifest-combined.json",
+	"name": "react-router-starter",
+	"short_name": "Welcome to react-router",
+	"start_url": ".",
+	"display": "standalone",
+	"background_color": "#fff",
+	"description": "A react-router starter."
+}
