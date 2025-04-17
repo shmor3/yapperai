@@ -1,9 +1,8 @@
-# Custom Dictionary Words
+# Dictionary
 cdylib
 icns
 lintstaged
-# Dictionary
-cdylib
+MSRV
 njsproj
 ntvs
 prototools
