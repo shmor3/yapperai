@@ -1,4 +1,4 @@
-import { getApiUrl } from './get-api-url'
+import { getApiUrl } from '@utils/get-api-url'
 
 export const apiRequest = async <ApiResponse,>(
 	path: `/${string}`,
