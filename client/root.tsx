@@ -1,3 +1,5 @@
+import type { Route } from '@rr/+types/root'
+import styles from '@styles/tailwind.css?url'
 import {
 	Links,
 	Meta,
@@ -7,19 +9,10 @@ import {
 	isRouteErrorResponse,
 } from 'react-router'
 
-import type { Route } from './+types/root'
-import './styles/tailwind.css'
-
 export const links: Route.LinksFunction = () => [
-	{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-	{
-		rel: 'preconnect',
-		href: 'https://fonts.gstatic.com',
-		crossOrigin: 'anonymous',
-	},
 	{
 		rel: 'stylesheet',
-		href: 'https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap',
+		href: styles,
 	},
 ]
 
@@ -41,8 +34,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	)
 }
 
-export default function App() {
-	return <Outlet />
+export default function App({ loaderData }: Route.ComponentProps) {
+	return <Outlet context={loaderData.version} />
+}
+
+export async function loader() {
+	await new Promise((resolve) => setTimeout(resolve, 2500))
+	return {
+		version: '0.1.0',
+	}
+}
+
+export function HydrateFallback() {
+	return (
+		<main className='pt-16 p-4 container mx-auto'>
+			<p>Skeleton rendered during SSR</p>
+		</main>
+	)
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -60,7 +68,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 		details = error.message
 		stack = error.stack
 	}
-
 	return (
 		<main className='pt-16 p-4 container mx-auto'>
 			<h1>{message}</h1>

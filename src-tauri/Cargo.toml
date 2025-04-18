@@ -2,7 +2,7 @@
 name = "yapperai"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["shmor3"]
 edition = "2021"
 
 [lib]
