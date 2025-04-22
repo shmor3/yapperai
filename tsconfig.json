@@ -14,6 +14,7 @@
 		"paths": {
 			"@client/*": ["./client/*"],
 			"@styles/*": ["./client/styles/*"],
+			"@pages/*": ["./client/pages/*"],
 			"@types/*": ["./types/*"],
 			"@utils/*": ["utils/*"],
 			"@rr/*": ["./.react-router/types/client/*"]

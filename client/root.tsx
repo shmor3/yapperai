@@ -11,6 +11,11 @@ import {
 
 export const links: Route.LinksFunction = () => [
 	{
+		rel: 'preload',
+		as: 'style',
+		href: styles,
+	},
+	{
 		rel: 'stylesheet',
 		href: styles,
 	},
@@ -39,7 +44,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
 }
 
 export async function loader() {
-	await new Promise((resolve) => setTimeout(resolve, 2500))
 	return {
 		version: '0.1.0',
 	}

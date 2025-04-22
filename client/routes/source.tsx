@@ -1,47 +1,64 @@
+import { Container } from '@client/components/container'
 import type { Route } from '@rr/routes/+types/source'
-import { invoke } from '@tauri-apps/api/core'
-import { useEffect } from 'react'
-import { Form, type MetaFunction, useFetcher } from 'react-router'
-import { generatePageTitle } from 'utils/page-title'
+import { generatePageTitle } from '@utils/page-title'
+import { type FormEvent, useCallback, useState } from 'react'
+import type { MetaFunction } from 'react-router'
 
+const greeting = (name: string): Promise<string> => {
+	const message = `Hello, ${name}!`
+	console.log(message)
+	return Promise.resolve(message)
+}
 export const meta: MetaFunction = () => {
 	return [{ title: generatePageTitle('Source') }]
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-	await new Promise((resolve) => setTimeout(resolve, 500))
-	console.log(params.id)
-	return { data: 'ok' }
-}
-
-export async function ClientAction({ request }: Route.ClientActionArgs) {
-	const formData = await request.formData()
-	const name = formData.get('name')
-	try {
-		const message = await invoke('greet', { name })
-		return { greetMsg: message }
-	} catch (error) {
-		console.error('Error invoking greet:', error)
-		return { greetMsg: 'An error occurred while greeting.' }
+	const data = params.name
+	return {
+		data: data,
 	}
 }
 
-export default ({ loaderData }: Route.ComponentProps) => {
-	const { data } = loaderData
-	const fetcher = useFetcher()
-	useEffect(() => {
-		document.title = generatePageTitle('Source')
-	}, [])
+export default function Source() {
+	const [greetMsg, setGreetMsg] = useState<string>('')
+	const [name, setName] = useState<string>('')
+	const greet = useCallback(async () => {
+		try {
+			const message = await greeting(name)
+			setGreetMsg(message)
+		} catch (error) {
+			console.error('Error invoking greet:', error)
+			setGreetMsg('An error occurred while greeting.')
+		}
+	}, [name])
+	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+		console.log(name)
+		e.preventDefault()
+		if (!name) {
+			setGreetMsg('Please enter a name.')
+			return
+		}
+		greet()
+	}
 	return (
 		<main>
-			<div>Data status: {data}</div>
-			<div>
-				<Form method='post'>
-					<input name='name' placeholder='Enter a name...' />
-					<button type='submit'>Greet</button>
-				</Form>
-				<p>{fetcher.data?.greetMsg}</p>
-			</div>
+			<Container>
+				<div>
+					<form onSubmit={handleSubmit}>
+						<input
+							className='input'
+							value={name}
+							onChange={(e) => setName(e.currentTarget.value)}
+							placeholder='Enter a name...'
+						/>
+						<button className='btn' type='submit'>
+							Greet
+						</button>
+					</form>
+					<p className='p-5'>Message: {greetMsg}</p>
+				</div>
+			</Container>
 		</main>
 	)
 }

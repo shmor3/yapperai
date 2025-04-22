@@ -10,6 +10,7 @@ cesu
 corasick
 cpufeatures
 cssparser
+daisyui
 demangle
 displaydoc
 dlopen
@@ -37,6 +38,7 @@ ntvs
 objc
 pixbuf
 powerfmt
+prefersdark
 prototools
 rlib
 rustc
