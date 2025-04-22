@@ -70,6 +70,7 @@
 		"cpy-cli": "5.0.0",
 		"cross-env": "7.0.3",
 		"cspell": "8.17.5",
+		"daisyui": "5.0.26",
 		"depcheck": "1.4.7",
 		"dotenv": "16.4.7",
 		"env-cmd": "10.1.0",

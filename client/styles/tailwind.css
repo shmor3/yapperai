@@ -2,6 +2,13 @@
 @import "@fontsource/jetbrains-mono";
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  base: true;
+  root: ":root";
+  utils: true;
+  logs: true;
+}
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
@@ -9,7 +16,5 @@
 }
 
 body {
-  color: #ffffff;
-  background-color: #000000;
   font-family: "JetBrains Mono";
 }
