@@ -22,7 +22,8 @@
 		"typegen": "react-router typegen",
 		"tsc": "tsc --noEmit",
 		"prepare": "husky",
-		"tauri": "tauri"
+		"tauri": "tauri",
+		"sirv": "sirv"
 	},
 	"dependencies": {
 		"@fontsource/jetbrains-mono": "5.2.5",
@@ -99,6 +100,7 @@
 		"vite-env-only": "3.0.3",
 		"vite-plugin-pwa": "0.21.2",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "3.0.8"
+		"vitest": "3.0.8",
+		"sirv-cli":"3.0.1"
 	}
 }
