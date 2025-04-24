@@ -2,7 +2,7 @@
 	"name": "yapperai",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@10.7.0",
+	"packageManager": "pnpm@10.9.0",
 	"engines": {
 		"node": "23.9.0"
 	},
@@ -89,6 +89,7 @@
 		"postcss-preset-env": "10.1.5",
 		"react-router-devtools": "^1.1.6",
 		"rimraf": "6.0.1",
+		"sirv-cli": "3.0.1",
 		"tailwind-merge": "^3.0.2",
 		"tailwindcss": "^4.0.14",
 		"tailwindcss-animate": "1.0.7",
@@ -100,7 +101,6 @@
 		"vite-env-only": "3.0.3",
 		"vite-plugin-pwa": "0.21.2",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "3.0.8",
-		"sirv-cli":"3.0.1"
+		"vitest": "3.0.8"
 	}
 }
