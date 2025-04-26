@@ -12,10 +12,10 @@ export const Footer: React.FC = () => {
 		}
 	}, [])
 	return (
-		<footer className='fixed bottom-0 left-0 right-0 flex h-[2rem] min-w-96 flex-row justify-between bg-base-300 p-2 pl-16 pr-16 text-neutral-400'>
-			<div>Development</div>
-			<div>yapperAi</div>
-			<div>v0.1.0</div>
+		<footer className='fixed bottom-0 left-0 right-0 grid h-[2rem] min-w-96 grid-cols-3 bg-base-300 px-4 pl-16 text-neutral-400 items-center'>
+			<div className='justify-self-start'>Dev</div>
+			<div className='justify-self-center'>yapperAi</div>
+			<div className='justify-self-end'>v0.1.0</div>
 		</footer>
 	)
 }

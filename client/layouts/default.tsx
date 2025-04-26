@@ -5,9 +5,7 @@ export default function Default() {
 	return (
 		<main>
 			<Container>
-				<div className='mt-12'>
-					<Outlet />
-				</div>
+				<Outlet />
 			</Container>
 		</main>
 	)

@@ -1,10 +1,9 @@
 import { SidebarButton } from '@client/partials/sidebar/button'
 import { Items } from '@client/partials/sidebar/items'
-import { Logo } from '@client/partials/sidebar/logo'
 import { GearIcon } from '@primer/octicons-react'
 import type React from 'react'
 import { useEffect, useState } from 'react'
-import { redirect } from 'react-router'
+
 export const Sidebar: React.FC<{
 	active: string
 	setActive: (value: string) => void
@@ -35,38 +34,36 @@ export const Sidebar: React.FC<{
 		window.addEventListener('resize', updateOverflow)
 		return () => window.removeEventListener('resize', updateOverflow)
 	}, [])
+
 	const toggleOverflow = () => {
 		setState((prevState) => ({
 			...prevState,
 			showOverflow: !prevState.showOverflow,
 		}))
 	}
-	const handleNavigation = (itemId: string, url: string) => {
+
+	const handleNavigation = (itemId: string) => {
 		setActive(itemId)
-		redirect(url)
 	}
 	return (
 		<div className='sidebar fixed bottom-[4rem] left-0 top-7 z-10 flex h-full w-[4rem] flex-col items-center justify-between bg-base-300'>
-			<nav className='flex flex-col w-full'>
+			<nav className='flex flex-col w-full h-full pt-4'>
 				<ul className='menu flex h-full w-full flex-grow flex-col items-center'>
-					<li>
-						<Logo />
-					</li>
-					{Object.entries(Items).map(([label, { icon, url }]) => {
-						if (state.overflowItems.includes(label) && label !== 'settings')
+					{Object.entries(Items).map(([label, { icon }]) => {
+						if (state.overflowItems.includes(label) || label === 'settings')
 							return null
 						return (
 							<li
 								key={label}
 								data-item-id={label}
-								className={`menu-item mb-1 w-full ${label === 'settings' ? 'mt-auto' : ''}`}
+								className='menu-item mb-1 w-full'
 							>
 								<SidebarButton
 									id={label}
 									icon={icon}
 									active={active}
 									setActive={setActive}
-									onClick={() => handleNavigation(label, url)}
+									onClick={() => handleNavigation(label)}
 									className='h-[4rem] w-full'
 								>
 									{label}
@@ -87,7 +84,7 @@ export const Sidebar: React.FC<{
 							{state.showOverflow && (
 								<ul className='absolute bottom-full left-full ml-2 rounded-lg bg-base-300 shadow-lg z-20'>
 									{state.overflowItems.map((label) => {
-										const { icon, url } = Items[label]
+										const { icon } = Items[label]
 										return (
 											<li key={label} className='w-full'>
 												<SidebarButton
@@ -96,7 +93,7 @@ export const Sidebar: React.FC<{
 													active={active}
 													setActive={setActive}
 													onClick={() => {
-														handleNavigation(label, url)
+														handleNavigation(label)
 														toggleOverflow()
 													}}
 													className='h-[4rem] w-full px-4'
@@ -111,8 +108,19 @@ export const Sidebar: React.FC<{
 							)}
 						</li>
 					)}
-					<GearIcon />
 				</ul>
+				<div className='mt-auto mb-4 w-full'>
+					<SidebarButton
+						id='settings'
+						icon={<GearIcon />}
+						active={active}
+						setActive={setActive}
+						onClick={() => handleNavigation('settings')}
+						className='h-[4rem] w-full'
+					>
+						settings
+					</SidebarButton>{' '}
+				</div>
 			</nav>
 		</div>
 	)

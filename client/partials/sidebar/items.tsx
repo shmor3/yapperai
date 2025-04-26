@@ -5,7 +5,6 @@ export const Items: {
 	[key: string]: {
 		component: React.ComponentType
 		icon: React.ReactNode
-		url: string
 	}
 } = {
 	// home: {
