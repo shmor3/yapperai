@@ -1,39 +1,37 @@
 import type React from 'react'
-import { create } from 'zustand'
+import { createContext, useState, useContext } from 'react'
 
-export const useBearStore = create<BearStore>((set) => ({
-	bears: 0,
-	increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
-	decreasePopulation: () =>
-		set((state) => ({ bears: state.bears > 0 ? state.bears - 1 : 0 })),
-	removeAllBears: () => set({ bears: 0 }),
-}))
-
-interface BearStore {
+interface BearContextType {
 	bears: number
 	increasePopulation: () => void
 	decreasePopulation: () => void
 	removeAllBears: () => void
 }
 
-interface BearStateProps {
-	children: (state: BearStore) => React.ReactNode
-}
+const BearContext = createContext<BearContextType | undefined>(undefined)
 
-export const BearState: React.FC<BearStateProps> = ({ children }) => {
-	const bears = useBearStore((state) => state.bears)
-	const increasePopulation = useBearStore((state) => state.increasePopulation)
-	const decreasePopulation = useBearStore((state) => state.decreasePopulation)
-	const removeAllBears = useBearStore((state) => state.removeAllBears)
+export const BearProvider: React.FC<{ children: React.ReactNode }> = ({
+	children,
+}) => {
+	const [bears, setBears] = useState(0)
+
+	const increasePopulation = () => setBears(bears + 1)
+	const decreasePopulation = () => setBears(bears > 0 ? bears - 1 : 0)
+	const removeAllBears = () => setBears(0)
 
 	return (
-		<>
-			{children({
-				bears,
-				increasePopulation,
-				decreasePopulation,
-				removeAllBears,
-			})}
-		</>
+		<BearContext.Provider
+			value={{ bears, increasePopulation, decreasePopulation, removeAllBears }}
+		>
+			{children}
+		</BearContext.Provider>
 	)
+}
+
+export const useBearContext = () => {
+	const context = useContext(BearContext)
+	if (context === undefined) {
+		throw new Error('useBearContext must be used within a BearProvider')
+	}
+	return context
 }

@@ -23,7 +23,11 @@ export const links: Route.LinksFunction = () => [
 	},
 ]
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({
+	children,
+}: {
+	children: React.ReactNode
+}) {
 	return (
 		<html lang='en'>
 			<head>
@@ -42,15 +46,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	)
 }
 
-export default function App({ loaderData }: Route.ComponentProps) {
+export default function App() {
 	return (
 		<Layout>
-			<Outlet context={loaderData.version} />
+			<Outlet />
 		</Layout>
 	)
 }
 
-export async function loader() {
+export const loader = async () => {
 	return {
 		version: '0.1.0',
 	}
@@ -68,7 +72,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 	let message = 'Oops!'
 	let details = 'An unexpected error occurred.'
 	let stack: string | undefined
-
 	if (isRouteErrorResponse(error)) {
 		message = error.status === 404 ? '404' : 'Error'
 		details =

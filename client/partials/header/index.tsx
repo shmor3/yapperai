@@ -1,15 +1,19 @@
+import { Logo } from '@client/partials/header/logo'
 import { Menu } from '@client/partials/header/menu'
 import { Notify } from '@client/partials/header/notify'
 import { Switch } from '@client/partials/header/switch'
 
 export const Header: React.FC = () => {
 	return (
-		<header className='fixed left-0 right-0 top-7 flex h-12 w-full items-center flex-row justify-between bg-base-100 shadow-sm pl-16 pr-16'>
-			<nav className='navbar w-full px-4'>
-				<div className='flex-1'>
+		<header className='fixed left-0 right-0 top-7 h-12 w-full min-w-96 bg-base-100 shadow-sm'>
+			<nav className='grid h-full w-full grid-cols-3 items-center px-4 pl-16'>
+				<div className='justify-self-start'>
 					<Switch />
 				</div>
-				<div className='flex flex-1 justify-end'>
+				<div className='justify-self-center'>
+					<Logo />
+				</div>
+				<div className='flex justify-self-end gap-4'>
 					<Notify />
 					<Menu />
 				</div>
