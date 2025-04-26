@@ -1,24 +1,10 @@
 import type { useBearStore } from '@client/state/bears'
-import type { Route } from '@rr/routes/+types/source'
 import { invoke } from '@tauri-apps/api/core'
-import { generatePageTitle } from '@utils/page-title'
 import { type FormEvent, useCallback, useState } from 'react'
-import type { MetaFunction } from 'react-router'
 
 const greeting = async (name: string): Promise<string> => {
 	const message = await invoke<string>('greet', { name })
 	return Promise.resolve(message)
-}
-
-export const meta: MetaFunction = () => {
-	return [{ title: generatePageTitle('Source') }]
-}
-
-export async function loader({ params }: Route.LoaderArgs) {
-	const data = params.name
-	return {
-		data: data,
-	}
 }
 
 type BearState = ReturnType<typeof useBearStore.getState>
@@ -55,29 +41,33 @@ export function Home({
 	}
 
 	return (
-		<div>
-			<form onSubmit={handleSubmit}>
-				<input
-					className='input'
-					value={name}
-					onChange={(e) => setName(e.currentTarget.value)}
-					placeholder='Enter a name...'
-				/>
-				<button className='btn' type='submit'>
-					Greet
-				</button>
-			</form>
+		<div className='flex flex-col w-full h-full items-center justify-center'>
+			<div className='flex flex-row'>
+				<form className='flex flex-row' onSubmit={handleSubmit}>
+					<input
+						className='input'
+						value={name}
+						onChange={(e) => setName(e.currentTarget.value)}
+						placeholder='Enter a name...'
+					/>
+					<button className='btn' type='submit'>
+						Greet
+					</button>
+				</form>
+			</div>
 			<p className='p-5'>Message: {greetMsg}</p>
-			<p className='p-5'>{bears} around here ...</p>
-			<button className='btn' type='button' onClick={increasePopulation}>
-				+
-			</button>
-			<button className='btn' type='button' onClick={decreasePopulation}>
-				-
-			</button>
-			<button className='btn' type='button' onClick={removeAllBears}>
-				--
-			</button>
+			<div className='flex flex-row'>
+				<button className='btn' type='button' onClick={increasePopulation}>
+					+
+				</button>
+				<button className='btn' type='button' onClick={decreasePopulation}>
+					-
+				</button>
+				<button className='btn' type='button' onClick={removeAllBears}>
+					--
+				</button>
+			</div>
+			<p className='p-5'>Count: {bears}</p>
 		</div>
 	)
 }

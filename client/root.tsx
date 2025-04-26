@@ -1,5 +1,7 @@
+import { TitleBar } from '@client/components/titlebar'
 import type { Route } from '@rr/+types/root'
 import styles from '@styles/tailwind.css?url'
+
 import {
 	Links,
 	Meta,
@@ -31,6 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				<Links />
 			</head>
 			<body>
+				<TitleBar />
 				{children}
 				<ScrollRestoration />
 				<Scripts />
@@ -40,7 +43,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-	return <Outlet context={loaderData.version} />
+	return (
+		<Layout>
+			<Outlet context={loaderData.version} />
+		</Layout>
+	)
 }
 
 export async function loader() {

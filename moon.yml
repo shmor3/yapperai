@@ -1,0 +1,10 @@
+$schema: https://moonrepo.dev/schemas/project.json
+type: 'application'
+stack: 'frontend'
+tags:
+    - 'typescript'
+    - 'rust'
+    - 'tauri'
+project:
+    name: 'desktop-app'
+    description: 'desktop application'
