@@ -1,5 +1,5 @@
 import type React from 'react'
-import { createContext, useState, useContext } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface BearContextType {
 	bears: number
@@ -16,7 +16,10 @@ export const BearProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [bears, setBears] = useState(0)
 
 	const increasePopulation = () => setBears(bears + 1)
-	const decreasePopulation = () => setBears(bears > 0 ? bears - 1 : 0)
+	const decreasePopulation = () => {
+		const newPopulation = bears > 0 ? bears - 1 : 0
+		setBears(newPopulation)
+	}
 	const removeAllBears = () => setBears(0)
 
 	return (
