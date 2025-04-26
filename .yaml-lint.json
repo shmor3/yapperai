@@ -1,0 +1,4 @@
+{
+	"scheme": "CORE_SCHEMA",
+	"ignore": "dir/*.yaml"
+}

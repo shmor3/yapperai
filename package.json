@@ -14,8 +14,10 @@
 		"dev": "cross-env env-cmd -e development react-router dev",
 		"build": "cross-env env-cmd -e production run-s 'build:client'",
 		"build:client": "react-router build",
+		"build:proto": "buf generate ./proto",
+
 		"preview": "cross-env env-cmd -e production react-router dev",
-		"clean": "rimraf build",
+		"clean": "rimraf node_modules .react-router build pnpm-lock.yaml",
 		"check": "run-p -c check:types check:biome",
 		"check:biome": "biome check .",
 		"check:types": "run-p -c typegen tsc",
@@ -101,6 +103,8 @@
 		"vite-env-only": "3.0.3",
 		"vite-plugin-pwa": "0.21.2",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "3.0.8"
+		"vitest": "3.0.8",
+		"jsonlint": "1.6.3",
+		"yaml-lint": "1.7.0"
 	}
 }
