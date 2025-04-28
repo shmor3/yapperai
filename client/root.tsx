@@ -1,6 +1,7 @@
 import { TitleBar } from '@client/components/titlebar'
 import type { Route } from '@rr/+types/root'
 import styles from '@styles/tailwind.css?url'
+import { invoke as tauriInvoke } from '@tauri-apps/api/core'
 
 import {
 	Links,
@@ -10,6 +11,9 @@ import {
 	ScrollRestoration,
 	isRouteErrorResponse,
 } from 'react-router'
+if (typeof window !== 'undefined') {
+	window.invoke = tauriInvoke
+}
 
 export const links: Route.LinksFunction = () => [
 	{
@@ -46,7 +50,10 @@ export function Layout({
 	)
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
+	if (loaderData.ready) {
+		console.log('ok')
+	}
 	return (
 		<Layout>
 			<Outlet />
@@ -55,9 +62,7 @@ export default function App() {
 }
 
 export const loader = async () => {
-	return {
-		version: '0.1.0',
-	}
+	return { ready: true }
 }
 
 export function HydrateFallback() {

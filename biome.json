@@ -9,7 +9,10 @@
 			".vscode",
 			"node_modules",
 			"templates",
-			"build"
+			"build",
+			".react-router",
+			"src-tauri",
+			".history"
 		]
 	},
 	"formatter": {

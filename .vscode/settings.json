@@ -1,0 +1,18 @@
+{
+  "cSpell.customDictionaries": {
+    "dictionary": {
+      "name": "dictionary",
+      "path": "${workspaceFolder:yapperai}/.cspell/dictionary",
+      "addWords": true,
+      "scope": "workspace"
+    }
+  },
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": "./.vscode/daisyui.md",
+    },
+    {
+      "file": "./.vscode/react-router.md",
+    }
+  ],
+}

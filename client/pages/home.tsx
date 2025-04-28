@@ -1,15 +1,12 @@
 import { useBearContext } from '@client/state/bears'
-import { invoke } from '@tauri-apps/api/core'
 import { type FormEvent, useCallback, useState } from 'react'
+
 const greeting = async (name: string): Promise<string> => {
 	const message = await invoke<string>('greet', { name })
 	const sum = await invoke<string>('math', { a: 1, b: 2 })
 	return Promise.resolve(`${message} ${sum}`)
 }
-export function Home({ loader }: { loader: boolean }) {
-	if (!loader) {
-		console.error('Loader data is not ready:', loader)
-	}
+export const Home: React.FC = () => {
 	const { bears, increasePopulation, decreasePopulation, removeAllBears } =
 		useBearContext()
 	const [greetMsg, setGreetMsg] = useState<string>('')

@@ -1,17 +1,16 @@
 import { SidebarButton } from '@client/partials/sidebar/button'
-import { Items } from '@client/partials/sidebar/items'
-import { GearIcon } from '@primer/octicons-react'
+import { Items, getItemIndexById } from '@client/partials/sidebar/items'
+import { useBearContext } from '@client/state/bears'
 import type React from 'react'
 import { useEffect, useState } from 'react'
 
-export const Sidebar: React.FC<{
-	active: string
-	setActive: (value: string) => void
-}> = ({ active, setActive }) => {
+export const Sidebar: React.FC = () => {
+	const { activeTab, handleTabChange } = useBearContext()
 	const [state, setState] = useState({
 		overflowItems: [] as string[],
 		showOverflow: false,
 	})
+
 	useEffect(() => {
 		const updateOverflow = () => {
 			const sidebar = document.querySelector('.sidebar')
@@ -23,9 +22,10 @@ export const Sidebar: React.FC<{
 			menuItems.forEach((item, index) => {
 				if (index === menuItems.length - 1) return
 				totalHeight += item.clientHeight
-				if (totalHeight > sidebarHeight - 100) {
+				if (totalHeight > sidebarHeight - 200) {
 					const itemId = item.getAttribute('data-item-id')
-					if (itemId) overflowItems.push(itemId)
+					if (itemId && itemId !== 'home' && itemId !== 'settings')
+						overflowItems.push(itemId)
 				}
 			})
 			setState((prevState) => ({ ...prevState, overflowItems }))
@@ -43,30 +43,50 @@ export const Sidebar: React.FC<{
 	}
 
 	const handleNavigation = (itemId: string) => {
-		setActive(itemId)
+		handleTabChange(getItemIndexById(itemId))
 	}
+
+	const homeItem = Items[0]
+	const settingsItem = Items[Items.length - 1]
+	const otherItems = Items.slice(1, -1)
+
 	return (
 		<div className='sidebar fixed bottom-[4rem] left-0 top-7 z-10 flex h-full w-[4rem] flex-col items-center justify-between bg-base-300'>
 			<nav className='flex flex-col w-full h-full pt-4'>
 				<ul className='menu flex h-full w-full flex-grow flex-col items-center'>
-					{Object.entries(Items).map(([label, { icon }]) => {
-						if (state.overflowItems.includes(label) || label === 'settings')
-							return null
+					<li
+						key={homeItem.id}
+						data-item-id={homeItem.id}
+						className='menu-item mb-1 w-full'
+					>
+						<SidebarButton
+							id={homeItem.id}
+							icon={homeItem.icon}
+							active={(activeTab === 0).toString()}
+							setActive={() => handleTabChange(0)}
+							onClick={() => handleNavigation(homeItem.id)}
+							className='h-[4rem] w-full'
+						>
+							{homeItem.id}
+						</SidebarButton>
+					</li>
+					{otherItems.map((item, index) => {
+						if (state.overflowItems.includes(item.id)) return null
 						return (
 							<li
-								key={label}
-								data-item-id={label}
+								key={item.id}
+								data-item-id={item.id}
 								className='menu-item mb-1 w-full'
 							>
 								<SidebarButton
-									id={label}
-									icon={icon}
-									active={active}
-									setActive={setActive}
-									onClick={() => handleNavigation(label)}
+									id={item.id}
+									icon={item.icon}
+									active={(activeTab === index + 1).toString()}
+									setActive={() => handleTabChange(index + 1)}
+									onClick={() => handleNavigation(item.id)}
 									className='h-[4rem] w-full'
 								>
-									{label}
+									{item.id}
 								</SidebarButton>
 							</li>
 						)
@@ -83,23 +103,25 @@ export const Sidebar: React.FC<{
 							</button>
 							{state.showOverflow && (
 								<ul className='absolute bottom-full left-full ml-2 rounded-lg bg-base-300 shadow-lg z-20'>
-									{state.overflowItems.map((label) => {
-										const { icon } = Items[label]
+									{state.overflowItems.map((id) => {
+										const item = Items.find((item) => item.id === id)
+										if (!item) return null
+										const index = getItemIndexById(id)
 										return (
-											<li key={label} className='w-full'>
+											<li key={id} className='w-full'>
 												<SidebarButton
-													id={label}
-													icon={icon}
-													active={active}
-													setActive={setActive}
+													id={id}
+													icon={item.icon}
+													active={(activeTab === index).toString()}
+													setActive={() => handleTabChange(index)}
 													onClick={() => {
-														handleNavigation(label)
+														handleNavigation(id)
 														toggleOverflow()
 													}}
 													className='h-[4rem] w-full px-4'
 													showLabel={true}
 												>
-													{label}
+													{id}
 												</SidebarButton>
 											</li>
 										)
@@ -111,15 +133,15 @@ export const Sidebar: React.FC<{
 				</ul>
 				<div className='mt-auto mb-4 w-full'>
 					<SidebarButton
-						id='settings'
-						icon={<GearIcon />}
-						active={active}
-						setActive={setActive}
-						onClick={() => handleNavigation('settings')}
+						id={settingsItem.id}
+						icon={settingsItem.icon}
+						active={(activeTab === Items.length - 1).toString()}
+						setActive={() => handleTabChange(Items.length - 1)}
+						onClick={() => handleNavigation(settingsItem.id)}
 						className='h-[4rem] w-full'
 					>
-						settings
-					</SidebarButton>{' '}
+						{settingsItem.id}
+					</SidebarButton>
 				</div>
 			</nav>
 		</div>

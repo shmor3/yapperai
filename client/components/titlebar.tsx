@@ -1,7 +1,7 @@
 import { DashIcon, SquareIcon, XIcon } from '@primer/octicons-react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useCallback, useEffect, useState } from 'react'
-export function TitleBar() {
+export const TitleBar: React.FC = () => {
 	const [window, setWindow] = useState<Awaited<
 		ReturnType<typeof getCurrentWindow>
 	> | null>(null)

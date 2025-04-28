@@ -3,6 +3,8 @@ import { createContext, useContext, useState } from 'react'
 
 interface BearContextType {
 	bears: number
+	activeTab: number
+	handleTabChange: (index: number) => void
 	increasePopulation: () => void
 	decreasePopulation: () => void
 	removeAllBears: () => void
@@ -14,6 +16,8 @@ export const BearProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	const [bears, setBears] = useState(0)
+	const [activeTab, setActiveTab] = useState(0)
+	const handleTabChange = (index: number) => setActiveTab(index)
 
 	const increasePopulation = () => setBears(bears + 1)
 	const decreasePopulation = () => {
@@ -24,7 +28,14 @@ export const BearProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	return (
 		<BearContext.Provider
-			value={{ bears, increasePopulation, decreasePopulation, removeAllBears }}
+			value={{
+				activeTab,
+				handleTabChange,
+				bears,
+				increasePopulation,
+				decreasePopulation,
+				removeAllBears,
+			}}
 		>
 			{children}
 		</BearContext.Provider>

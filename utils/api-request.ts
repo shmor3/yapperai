@@ -1,6 +1,6 @@
 import { getApiUrl } from '@utils/get-api-url'
 
-export const apiRequest = async <ApiResponse,>(
+export const apiRequest = async <ApiResponse>(
 	path: `/${string}`,
 	fetchOptions?: RequestInit,
 ) => {

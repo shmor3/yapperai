@@ -1,6 +1,6 @@
 {
-	"include": ["client", "utils"],
-	"exclude": ["node_modules"],
+	"include": ["client", "utils", "services/download.ts", "global.d.ts"],
+	"exclude": ["node_modules", ".history"],
 	"compilerOptions": {
 		"lib": ["DOM", "DOM.Iterable", "ES2022"],
 		"types": ["@react-router/node", "vite/client", "./types"],
