@@ -3,28 +3,31 @@ import { Content } from '@client/partials/content'
 import { Footer } from '@client/partials/footer'
 import { Header } from '@client/partials/header'
 import { Sidebar } from '@client/partials/sidebar'
-import { BearProvider } from '@client/state/bears'
+import { Items } from '@client/partials/sidebar/items'
+import { useBearContext } from '@client/state/bears'
 import type { Route } from '@rr/routes/+types/source'
-import { useState } from 'react'
 
 export default function Component({ loaderData }: Route.ComponentProps) {
-	const [active, setActive] = useState('')
+	const { activeTab } = useBearContext()
+	if (loaderData.ready) {
+		console.log('ok')
+	}
 
+	const ActiveComponent = Items[activeTab]?.component || Items[0].component
 	return (
-		<BearProvider>
-			<main className='flex flex-col'>
-				<Container size='lg'>
-					<Header />
-					<Sidebar active={active} setActive={setActive} />
-					<Content loader={loaderData.data} />
-					<Footer />
-				</Container>
-			</main>
-		</BearProvider>
+		<main className='flex flex-col'>
+			<Container size='lg'>
+				<Header />
+				<Sidebar />
+				<Content>
+					<ActiveComponent />
+				</Content>
+				<Footer />
+			</Container>
+		</main>
 	)
 }
 
 export async function loader() {
-	const data = true
-	return { data }
+	return { ready: true }
 }

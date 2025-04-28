@@ -7,12 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig(async () => ({
-	plugins: [
-		reactRouter(),
-		tailwindcss(),
-		tsconfigPaths(),
-		envOnlyMacros(),
-	],
+	plugins: [reactRouter(), tailwindcss(), tsconfigPaths(), envOnlyMacros()],
 	optimizeDeps: {
 		include: ['react', 'react/jsx-dev-runtime'],
 	},
@@ -29,7 +24,7 @@ export default defineConfig(async () => ({
 				}
 			: undefined,
 		watch: {
-			ignored: ['**/src-tauri/**'],
+			ignored: ['**/src-tauri/**', '.history/**'],
 		},
 	},
 }))

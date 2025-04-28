@@ -14,3 +14,4 @@ crates/tauri-driver
 crates/tauri-macos-sign
 crates/tauri-schema-generator
 crates/tests
+backend
