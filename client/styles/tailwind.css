@@ -3,42 +3,12 @@
 @plugin "tailwindcss-animate";
 @plugin "@tailwindcss/typography";
 @plugin "daisyui" {
-	themes: light --default, dark --prefersdark;
-	base: true;
-	root: ":root";
-	utils: true;
-	logs: true;
+  themes: light --default, dark --prefersdark;
 }
 
 @theme {
-	--font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-		"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
-
-body {
-	font-family: "JetBrains Mono";
-}
-
-.titlebar {
-	height: 30px;
-	background: #329ea3;
-	user-select: none;
-	display: flex;
-	justify-content: flex-end;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-}
-.titlebar-button {
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	width: 30px;
-	height: 30px;
-	user-select: none;
-	-webkit-user-select: none;
-}
-.titlebar-button:hover {
-	background: #5bbec3;
+  --default-font-family: "JetBrains Mono", ui-monospace, SFMono-Regular,
+    Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }

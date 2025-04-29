@@ -1,6 +1,5 @@
 import { reactRouter } from '@react-router/dev/vite'
 import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { envOnlyMacros } from 'vite-env-only'
 import tsconfigPaths from 'vite-tsconfig-paths'
