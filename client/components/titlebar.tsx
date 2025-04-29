@@ -51,7 +51,7 @@ export const TitleBar: React.FC = () => {
 			>
 				<button
 					type='button'
-					className='titlebar-button btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
+					className='btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
 					id='titlebar-minimize'
 					onClick={minimize}
 					onKeyDown={(e) => handleKeyDown(e, minimize)}
@@ -61,7 +61,7 @@ export const TitleBar: React.FC = () => {
 				</button>
 				<button
 					type='button'
-					className='titlebar-button btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
+					className='btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
 					id='titlebar-maximize'
 					onClick={toggleMaximize}
 					onKeyDown={(e) => handleKeyDown(e, toggleMaximize)}
@@ -71,7 +71,7 @@ export const TitleBar: React.FC = () => {
 				</button>
 				<button
 					type='button'
-					className='titlebar-button btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
+					className='btn btn-ghost inline-flex justify-center items-center w-[30px] h-[30px] select-none hover:bg-base-100'
 					id='titlebar-close'
 					onClick={close}
 					onKeyDown={(e) => handleKeyDown(e, close)}

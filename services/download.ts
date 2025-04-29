@@ -7,5 +7,5 @@ download(
 	'./path/to/save/my/file.txt',
 	({ progress, total }) =>
 		console.log(`Downloaded ${progress} of ${total} bytes`), // a callback that will be called with the download progress
-	{ 'Content-Type': 'text/plain' }, // optional headers to send with the request
+	new Map([['Content-Type', 'text/plain']]), // optional headers to send with the request
 )

@@ -25,59 +25,15 @@
 				"titleBarStyle": "Overlay",
 				"fullscreen": false,
 				"center": true
-			},
-			{
-				"label": "splash",
-				"width": 400,
-				"height": 200,
-				"decorations": false,
-				"resizable": false,
-				"url": "./assets/splash.html"
 			}
 		],
-		"security": {
-			"pattern": {
-				"use": "isolation",
-				"options": {
-					"dir": "../isolation-dist/"
-				}
-			},
-			"csp": {
-				"default-src": "'self' customprotocol: asset:",
-				"connect-src": "ipc: http://ipc.localhost",
-				"font-src": ["https://fonts.gstatic.com"],
-				"img-src": "'self' asset: http://asset.localhost blob: data:",
-				"style-src": "'unsafe-inline' 'self' https://fonts.googleapis.com"
-			},
-			"freezePrototype": true,
-			"assetProtocol": {
-				"enable": true,
-				"scope": {
-					"allow": ["$APPDATA/db/**", "$RESOURCE/**"],
-					"deny": ["$APPDATA/db/*.stronghold"]
-				}
-			}
-		},
-
 		"trayIcon": {
 			"iconPath": "icons/32x32.png",
 			"iconAsTemplate": true
 		}
 	},
 	"plugins": {
-		"updater": {
-			"windows": {
-				"installMode": "passive"
-			},
-			"pubkey": "CONTENT FROM PUBLICKEY.PEM",
-			"endpoints": [
-				"https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}",
-				"https://github.com/user/repo/releases/latest/download/latest.json"
-			]
-		},
-		"sql": {
-			"preload": ["sqlite:mydatabase.db"]
-		}
+
 	},
 	"bundle": {
 		"active": true,

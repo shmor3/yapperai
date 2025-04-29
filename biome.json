@@ -12,7 +12,8 @@
 			"build",
 			".react-router",
 			"src-tauri",
-			".history"
+			".history",
+			"./client/styles/tailwind.css"
 		]
 	},
 	"formatter": {
