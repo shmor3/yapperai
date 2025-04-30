@@ -1,6 +1,7 @@
 import { Home } from '@client/pages/home'
 import { Settings } from '@client/pages/settings'
-import { GearIcon, HomeIcon } from '@primer/octicons-react'
+import { Splits } from '@client/pages/splits'
+import { GearIcon, HomeIcon, AlertIcon } from '@primer/octicons-react'
 import type React from 'react'
 
 interface ItemType {
@@ -16,6 +17,11 @@ export const Items: ItemType[] = [
 		icon: <HomeIcon className='fill-current' />,
 	},
 	// Add any other items here in the desired order
+	{
+		id: 'splits',
+		component: Splits,
+		icon: <AlertIcon className='fill-current' />
+	},
 	{
 		id: 'settings',
 		component: Settings,
