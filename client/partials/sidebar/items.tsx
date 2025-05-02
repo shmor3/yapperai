@@ -15,7 +15,7 @@ export const Items: ItemType[] = [
 		component: Home,
 		icon: <HomeIcon className='fill-current' />,
 	},
-	// Add any other items here in the desired order
+	// Add any other items
 	{
 		id: 'settings',
 		component: Settings,
@@ -23,12 +23,10 @@ export const Items: ItemType[] = [
 	},
 ]
 
-// Helper function to get item by id
 export const getItemById = (id: string): ItemType | undefined => {
 	return Items.find((item) => item.id === id)
 }
 
-// Helper function to get index of item by id
 export const getItemIndexById = (id: string): number => {
 	return Items.findIndex((item) => item.id === id)
 }

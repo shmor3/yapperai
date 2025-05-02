@@ -2,7 +2,7 @@ import { SidebarButton } from '@client/partials/sidebar/button'
 import { Items, getItemIndexById } from '@client/partials/sidebar/items'
 import { useBearContext } from '@client/state/bears'
 import type React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export const Sidebar: React.FC = () => {
 	const { activeTab, handleTabChange } = useBearContext()
@@ -10,10 +10,11 @@ export const Sidebar: React.FC = () => {
 		overflowItems: [] as string[],
 		showOverflow: false,
 	})
+	const sidebarRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		const updateOverflow = () => {
-			const sidebar = document.querySelector('.sidebar')
+			const sidebar = sidebarRef.current
 			const menuItems = sidebar?.querySelectorAll('li.menu-item')
 			if (!sidebar || !menuItems) return
 			const sidebarHeight = sidebar.clientHeight
@@ -30,7 +31,7 @@ export const Sidebar: React.FC = () => {
 			})
 			setState((prevState) => ({ ...prevState, overflowItems }))
 		}
-		setTimeout(updateOverflow, 0)
+		updateOverflow()
 		window.addEventListener('resize', updateOverflow)
 		return () => window.removeEventListener('resize', updateOverflow)
 	}, [])
@@ -51,7 +52,10 @@ export const Sidebar: React.FC = () => {
 	const otherItems = Items.slice(1, -1)
 
 	return (
-		<div className='sidebar fixed bottom-[4rem] left-0 top-7 z-10 flex h-full w-[4rem] flex-col items-center justify-between bg-base-300'>
+		<div
+			ref={sidebarRef}
+			className='sidebar fixed bottom-[4rem] left-0 top-7 z-10 flex h-full w-[4rem] flex-col items-center justify-between bg-base-300'
+		>
 			<nav className='flex flex-col w-full h-full pt-4'>
 				<ul className='menu flex h-full w-full flex-grow flex-col items-center'>
 					<li

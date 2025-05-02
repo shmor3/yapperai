@@ -1,4 +1,4 @@
-import { Logo } from '@client/partials/header/logo'
+import { Logo } from '@client/components/logo'
 import { Menu } from '@client/partials/header/menu'
 import { Notify } from '@client/partials/header/notify'
 import { Switch } from '@client/partials/header/switch'
@@ -11,7 +11,7 @@ export const Header: React.FC = () => {
 					<Switch />
 				</div>
 				<div className='justify-self-center'>
-					<Logo />
+					<Logo size={32} />
 				</div>
 				<div className='flex justify-self-end gap-4'>
 					<Notify />

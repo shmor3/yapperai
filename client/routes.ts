@@ -7,5 +7,5 @@ import {
 
 export default [
 	layout('layouts/default.tsx', { id: 'source' }, [index('routes/source.tsx')]),
-	route(':page', 'layouts/default.tsx'),
+	route('splash', 'routes/splash.tsx', { id: 'splash' }),
 ] satisfies RouteConfig
