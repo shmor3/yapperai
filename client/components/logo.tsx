@@ -1,12 +1,16 @@
-export function Logo() {
+interface Props {
+	size?: number
+}
+
+export function Logo({ size }: Props) {
 	return (
-		<div className='flex-none w-4 items-center justify-center'>
+		<div className='flex justify-center items-center w-full h-full'>
 			<svg
 				xmlns='http://www.w3.org/2000/svg'
 				xmlnsXlink='http://www.w3.org/1999/xlink'
 				zoomAndPan='magnify'
 				viewBox='0 0 375 374.999991'
-				width={32}
+				width={size}
 				preserveAspectRatio='xMidYMid meet'
 				version='1.0'
 				aria-labelledby='logo'

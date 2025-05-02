@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod splash;
+use splash::close_splash;
+
 #[cfg(desktop)]
 use serde_json::Number;
 
@@ -19,9 +22,10 @@ fn math(a: Number, b: Number) -> Number {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
+    .menu(tauri::menu::Menu::default)
     .plugin(tauri_plugin_log::Builder::new().build())
     .plugin(tauri_plugin_websocket::init())
-    .invoke_handler(tauri::generate_handler![greet, math])
+    .invoke_handler(tauri::generate_handler![close_splash, greet, math])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

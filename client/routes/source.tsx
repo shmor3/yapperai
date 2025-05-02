@@ -6,6 +6,7 @@ import { Sidebar } from '@client/partials/sidebar'
 import { Items } from '@client/partials/sidebar/items'
 import { useBearContext } from '@client/state/bears'
 import type { Route } from '@rr/routes/+types/source'
+import { TitleBar } from '@client/components/titlebar'
 
 export default function Component({ loaderData }: Route.ComponentProps) {
 	const { activeTab } = useBearContext()
@@ -16,6 +17,8 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 	const ActiveComponent = Items[activeTab]?.component || Items[0].component
 	return (
 		<main className='flex flex-col'>
+			<TitleBar />
+
 			<Container size='lg'>
 				<Header />
 				<Sidebar />

@@ -1,10 +1,9 @@
 node = "23.9.0"
 npm = "11.2.0"
 pnpm = "10.7.0"
-rust = "latest"
+rust = "1.86.0"
 
 [env]
-# debug = "*"
 
 [settings]
 auto-clean = true
