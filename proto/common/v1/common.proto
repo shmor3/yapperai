@@ -1,0 +1,288 @@
+syntax = "proto3";
+package common.v1;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+option go_package = "github.com/example/api/common/v1";
+// ResourceService provides CRUD operations for resources
+service ResourceService {
+  // GetResource fetches a resource by ID
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse);
+  // CreateResource stores a new resource
+  rpc CreateResource(CreateResourceRequest) returns (CreateResourceResponse);
+  // UpdateResource modifies an existing resource
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceResponse);
+  // DeleteResource removes a resource
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceResponse);
+  // ListResources fetches multiple resources
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse);
+  // QueryResources searches for resources matching criteria
+  rpc QueryResources(QueryResourcesRequest) returns (QueryResourcesResponse);
+  // WatchResources provides resource changes in real-time
+  rpc WatchResources(WatchResourcesRequest) returns (stream ResourceEvent);
+  // BatchUpdateResources performs multiple operations in batch
+  rpc BatchUpdateResources(BatchUpdateRequest) returns (BatchUpdateResponse);
+}
+// ResourceType enumerates the types of resources
+enum ResourceType {
+  RESOURCE_TYPE_UNSPECIFIED = 0;
+  RESOURCE_TYPE_A = 1;
+  RESOURCE_TYPE_B = 2;
+  RESOURCE_TYPE_C = 3;
+  RESOURCE_TYPE_D = 4;
+  RESOURCE_TYPE_E = 5;
+  RESOURCE_TYPE_F = 6;
+}
+// ResourceStatus represents the status of a resource
+enum ResourceStatus {
+  RESOURCE_STATUS_UNSPECIFIED = 0;
+  RESOURCE_STATUS_ACTIVE = 1;
+  RESOURCE_STATUS_ARCHIVED = 2;
+  RESOURCE_STATUS_DELETED = 3;
+  RESOURCE_STATUS_DRAFT = 4;
+  RESOURCE_STATUS_PENDING = 5;
+}
+// Resource represents a generic data entity
+message Resource {
+  // Unique identifier
+  string id = 1;
+  // Type of resource
+  ResourceType type = 2;
+  // String data or serialized content
+  string data = 3;
+  // Structured data as a JSON object
+  google.protobuf.Struct structured_data = 4;
+  // Current status
+  ResourceStatus status = 5;
+  // Creation timestamp
+  google.protobuf.Timestamp created_at = 6;
+  // Last update timestamp
+  google.protobuf.Timestamp updated_at = 7;
+  // Version number for optimistic concurrency control
+  int64 version = 8;
+  // Creator identifier
+  string created_by = 9;
+  // Last modifier identifier
+  string updated_by = 10;
+  // Tags for categorization
+  repeated string tags = 11;
+  // Custom metadata
+  map<string, string> metadata = 12;
+}
+// GetResourceRequest to fetch a resource by ID
+message GetResourceRequest {
+  // Unique resource identifier
+  string resource_id = 1;
+  // Resource type for validation
+  optional ResourceType type = 2;
+  // Fields to include (empty = all)
+  repeated string include_fields = 3;
+  // Include version history
+  bool include_history = 4;
+}
+// GetResourceResponse with the requested resource
+message GetResourceResponse {
+  // Resource item
+  Resource resource = 1;
+  // Version history if requested
+  repeated Resource history = 2;
+}
+// CreateResourceRequest to store a new resource
+message CreateResourceRequest {
+  // Raw string data
+  string data = 1;
+  // Structured data as a JSON object
+  google.protobuf.Struct structured_data = 2;
+  // Resource type
+  ResourceType type = 3;
+  // Creator identifier
+  string created_by = 4;
+  // Initial status
+  ResourceStatus status = 5;
+  // Tags for categorization
+  repeated string tags = 6;
+  // Custom metadata
+  map<string, string> metadata = 7;
+}
+// CreateResourceResponse after storing resource
+message CreateResourceResponse {
+  // Created resource
+  Resource resource = 1;
+}
+// UpdateResourceRequest to modify existing resource
+message UpdateResourceRequest {
+  // Resource identifier
+  string resource_id = 1;
+  // New data content
+  string data = 2;
+  // Structured data as a JSON object
+  google.protobuf.Struct structured_data = 3;
+  // Update only specified fields
+  bool partial_update = 4;
+  // Fields to update (for partial updates)
+  repeated string update_fields = 5;
+  // Expected version for optimistic concurrency control
+  google.protobuf.Int64Value expected_version = 6;
+  // Modifier identifier
+  string updated_by = 7;
+  // New status if changing
+  google.protobuf.Int32Value status = 8;
+  // Tags to add
+  repeated string add_tags = 9;
+  // Tags to remove
+  repeated string remove_tags = 10;
+  // Metadata to update
+  map<string, string> update_metadata = 11;
+}
+// UpdateResourceResponse after modifying resource
+message UpdateResourceResponse {
+  // Updated resource
+  Resource resource = 1;
+  // Previous version
+  Resource previous = 2;
+}
+// DeleteResourceRequest to remove resource
+message DeleteResourceRequest {
+  // Resource identifier
+  string resource_id = 1;
+  // Hard delete or soft delete (archive)
+  bool hard_delete = 2;
+  // Expected version for optimistic concurrency control
+  google.protobuf.Int64Value expected_version = 3;
+  // Deleter identifier
+  string deleted_by = 4;
+}
+// DeleteResourceResponse after removing resource
+message DeleteResourceResponse {
+  // Deleted resource
+  Resource resource = 1;
+  // Deletion success
+  bool success = 2;
+}
+// ListResourcesRequest for multiple items
+message ListResourcesRequest {
+  // Resource IDs to retrieve
+  repeated string resource_ids = 1;
+  // Resource type to validate
+  optional ResourceType type = 2;
+}
+// ListResourcesResponse with multiple items
+message ListResourcesResponse {
+  // Retrieved resources
+  repeated Resource resources = 1;
+  // IDs that weren't found
+  repeated string missing_ids = 2;
+}
+// QueryResourcesRequest for searching resources
+message QueryResourcesRequest {
+  // Resource type to query
+  ResourceType type = 1;
+  // Filter conditions as a JSON object
+  google.protobuf.Struct filters = 2;
+  // Sort order
+  repeated SortField sort_by = 3;
+  // Maximum results
+  int32 limit = 4;
+  // Results offset
+  int32 offset = 5;
+  // Fields to include
+  repeated string include_fields = 6;
+}
+// SortField for query sorting
+message SortField {
+  // Field name
+  string field = 1;
+  // Sort direction
+  bool descending = 2;
+}
+// QueryResourcesResponse with search results
+message QueryResourcesResponse {
+  // Matching resources
+  repeated Resource resources = 1;
+  // Total matching count (might exceed resources returned)
+  int32 total_count = 2;
+  // Has more results
+  bool has_more = 3;
+  // Suggestion for next page offset
+  int32 next_offset = 4;
+}
+// WatchResourcesRequest for real-time resource updates
+message WatchResourcesRequest {
+  // Resource type to watch
+  ResourceType type = 1;
+  // Filter conditions
+  google.protobuf.Struct filters = 2;
+  // Subscribe to specific IDs
+  repeated string resource_ids = 3;
+  // Include initial state
+  bool include_initial_state = 4;
+  // Fields to include in the stream
+  repeated string include_fields = 5;
+  // Maximum items in initial state
+  int32 initial_limit = 6;
+}
+// ResourceOperation represents the type of change to a resource
+enum ResourceOperation {
+  RESOURCE_OPERATION_UNSPECIFIED = 0;
+  RESOURCE_OPERATION_CREATED = 1;
+  RESOURCE_OPERATION_UPDATED = 2;
+  RESOURCE_OPERATION_DELETED = 3;
+  RESOURCE_OPERATION_RESTORED = 4;
+}
+// ResourceEvent describes a change to a resource
+message ResourceEvent {
+  // Type of operation
+  ResourceOperation operation = 1;
+  // Affected resource
+  Resource resource = 2;
+  // Previous state for updates
+  Resource previous = 3;
+  // Change timestamp
+  google.protobuf.Timestamp timestamp = 4;
+  // Changed fields for updates
+  repeated string changed_fields = 5;
+  // User who made the change
+  string changed_by = 6;
+}
+// BatchUpdateRequest for performing multiple operations
+message BatchUpdateRequest {
+  // Operations to perform
+  repeated ResourceOperationRequest operations = 1;
+  // Abort on first error
+  bool atomic = 2;
+}
+// ResourceOperationRequest for a single operation in a batch
+message ResourceOperationRequest {
+  // Operation type
+  oneof operation {
+    CreateResourceRequest create = 1;
+    UpdateResourceRequest update = 2;
+    DeleteResourceRequest delete = 3;
+  }
+  // Client-side operation ID
+  string operation_id = 4;
+}
+// BatchUpdateResponse for multiple operations
+message BatchUpdateResponse {
+  // Operation results
+  repeated ResourceOperationResult results = 1;
+  // Overall success
+  bool success = 2;
+  // Error message if failed
+  string error_message = 3;
+}
+// ResourceOperationResult for a single operation in a batch
+message ResourceOperationResult {
+  // Operation ID from request
+  string operation_id = 1;
+  // Success status
+  bool success = 2;
+  // Error message if failed
+  string error_message = 3;
+  // Result data
+  oneof result {
+    CreateResourceResponse create = 4;
+    UpdateResourceResponse update = 5;
+    DeleteResourceResponse delete = 6;
+  }
+}

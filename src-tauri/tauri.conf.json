@@ -26,7 +26,8 @@
         "titleBarStyle": "Overlay",
         "fullscreen": false,
         "center": true,
-        "visible": false
+        "visible": false,
+        "backgroundColor": "#1d232a"
       },
       {
         "label": "splash",
@@ -35,7 +36,9 @@
         "decorations": false,
         "resizable": false,
         "center": true,
-        "url": "splash"
+        "url": "splash",
+        "visible": true,
+        "backgroundColor": "#1d232a"
       }
     ],
     "trayIcon": {
