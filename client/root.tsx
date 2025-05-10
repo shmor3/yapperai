@@ -1,4 +1,3 @@
-import { TitleBar } from '@client/components/titlebar'
 import type { Route } from '@rr/+types/root'
 import styles from '@styles/tailwind.css?url'
 import { invoke as tauriInvoke } from '@tauri-apps/api/core'
@@ -41,7 +40,6 @@ export function Layout({
 				<Links />
 			</head>
 			<body>
-				<TitleBar />
 				{children}
 				<ScrollRestoration />
 				<Scripts />

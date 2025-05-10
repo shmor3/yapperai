@@ -1,0 +1,81 @@
+syntax = "proto3";
+package meta.v1;
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+option go_package = "github.com/example/api/meta/v1";
+// Status enum represents common status values for resources
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_INACTIVE = 2;
+  STATUS_DELETED = 3;
+  STATUS_DRAFT = 4;
+  STATUS_PENDING = 5;
+}
+// Resource represents a generic data entity
+message Resource {
+  // Unique identifier
+  string id = 1;
+  // Key-value metadata
+  map<string, string> labels = 2;
+}
+// LogEventRequest for logging system events
+message LogEventRequest {
+  // Severity level
+  enum Level {
+    LEVEL_DEBUG = 0;
+    LEVEL_INFO = 1;
+    LEVEL_WARNING = 2;
+    LEVEL_ERROR = 3;
+    LEVEL_CRITICAL = 4;
+  }
+  // Event level
+  Level level = 1;
+  // Event message
+  string message = 2;
+  // Event source
+  string source = 3;
+  // Event timestamp
+  google.protobuf.Timestamp timestamp = 4;
+  // Event context data
+  map<string, string> context = 5;
+}
+// MetadataService provides operations for metadata management
+service MetadataService {
+  // GetMetadata retrieves metadata information
+  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
+  // UpdateMetadata modifies metadata
+  rpc UpdateMetadata(UpdateMetadataRequest) returns (UpdateMetadataResponse);
+}
+// GetMetadataRequest for retrieving metadata
+message GetMetadataRequest {
+  // Resource identifier
+  string resource_id = 1;
+  // Metadata keys to retrieve (empty means all)
+  repeated string keys = 2;
+}
+// GetMetadataResponse containing metadata information
+message GetMetadataResponse {
+  // Resource identifier
+  string resource_id = 1;
+  // Metadata key-value pairs
+  map<string, string> metadata = 2;
+}
+// UpdateMetadataRequest for modifying metadata
+message UpdateMetadataRequest {
+  // Resource identifier
+  string resource_id = 1;
+  // Metadata to update
+  map<string, string> metadata = 2;
+  // Keys to remove
+  repeated string remove_keys = 3;
+}
+// UpdateMetadataResponse after metadata modification
+message UpdateMetadataResponse {
+  // Resource identifier
+  string resource_id = 1;
+  // Updated metadata
+  map<string, string> metadata = 2;
+  // Operation success status
+  bool success = 3;
+}

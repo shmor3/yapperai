@@ -1,12 +1,14 @@
 # Dictionary
 autocfg
 bitflags
+bufbuild
 bumpalo
 bytemuck
 byteorder
 camino
 cdylib
 cesu
+connectrpc
 corasick
 cpufeatures
 cssparser
@@ -17,6 +19,7 @@ dlopen
 endi
 enumflags
 errno
+extism
 fastrand
 fdeflate
 flate
@@ -25,6 +28,7 @@ futf
 fxhash
 gdkwayland
 gobject
+heathcheck
 icns
 isbot
 jsonlint
