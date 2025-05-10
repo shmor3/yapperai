@@ -18,7 +18,6 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 	return (
 		<main className='flex flex-col'>
 			<TitleBar />
-
 			<Container size='lg'>
 				<Header />
 				<Sidebar />

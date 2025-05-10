@@ -3,5 +3,7 @@ import type { Config } from '@react-router/dev/config'
 export default {
 	appDirectory: 'client',
 	ssr: false,
-	prerender: ['/', '/splash'],
+	prerender: async () => {
+		return ['/', '/splash']
+	},
 } satisfies Config

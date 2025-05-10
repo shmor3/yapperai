@@ -1,0 +1,209 @@
+syntax = "proto3";
+package service.v1;
+import "common/v1/common.proto";
+import "meta/v1/meta.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+option go_package = "github.com/example/api/service/v1";
+// DataProcessingService handles data processing operations
+service DataProcessingService {
+  // ProcessData processes input data and returns a response
+  rpc ProcessData(ProcessRequest) returns (ProcessResponse);
+  // StreamData provides a streaming interface for data processing
+  rpc StreamData(stream ProcessRequest) returns (stream ProcessResponse);
+  // ValidateData validates input data without processing it
+  rpc ValidateData(ProcessRequest) returns (ValidationResponse);
+  // BatchProcess handles multiple processing operations
+  rpc BatchProcess(BatchProcessRequest) returns (BatchProcessResponse);
+}
+// ProcessRequest encapsulates data for processing operations
+message ProcessRequest {
+  // Unique ID for the request
+  string request_id = 1;
+  // Input data as a structured object
+  google.protobuf.Struct data = 2;
+  // Timestamp of the request
+  google.protobuf.Timestamp timestamp = 3;
+  // Request metadata
+  map<string, string> metadata = 4;
+  // Source identifier
+  string source = 5;
+  // Processing priority (higher number = higher priority)
+  int32 priority = 6;
+  // Processing options
+  ProcessOptions options = 7;
+}
+// ProcessOptions configures processing behavior
+message ProcessOptions {
+  // Processing mode
+  enum Mode {
+    MODE_UNSPECIFIED = 0;
+    NORMAL = 1;
+    FAST = 2;
+    THOROUGH = 3;
+  }
+  // Selected processing mode
+  Mode mode = 1;
+  // Timeout in milliseconds
+  int32 timeout_ms = 2;
+  // Additional processing parameters
+  map<string, string> parameters = 3;
+}
+// ProcessResponse contains the result of a processing operation
+message ProcessResponse {
+  // Unique ID for the response, matching request_id
+  string request_id = 1;
+  // Output data as a structured object
+  google.protobuf.Struct data = 2;
+  // Processing timestamp
+  google.protobuf.Timestamp timestamp = 3;
+  // Response metadata
+  map<string, string> metadata = 4;
+  // Success status
+  bool success = 5;
+  // Error message if any
+  string error_message = 6;
+  // Error code if any
+  int32 error_code = 7;
+  // Processing duration in milliseconds
+  int32 processing_time_ms = 8;
+}
+// ValidationResponse indicates if input data is valid
+message ValidationResponse {
+  // Validation success status
+  bool valid = 1;
+  // Validation errors if any
+  repeated ValidationError errors = 2;
+  // Warnings that don't invalidate the input
+  repeated ValidationWarning warnings = 3;
+}
+// ValidationError details validation errors
+message ValidationError {
+  // Path to the field with error
+  string path = 1;
+  // Error message
+  string message = 2;
+  // Error code
+  int32 code = 3;
+}
+// ValidationWarning details validation warnings
+message ValidationWarning {
+  // Path to the field with warning
+  string path = 1;
+  // Warning message
+  string message = 2;
+  // Warning code
+  int32 code = 3;
+}
+// BatchProcessRequest for processing multiple items
+message BatchProcessRequest {
+  // Requests to process
+  repeated ProcessRequest requests = 1;
+  // Process in parallel when possible
+  bool parallel = 2;
+  // Continue processing after errors
+  bool continue_on_error = 3;
+  // Execution timeout in milliseconds
+  int32 batch_timeout_ms = 4;
+}
+// BatchProcessResponse contains results for batch operations
+message BatchProcessResponse {
+  // Responses for each request
+  repeated ProcessResponse responses = 1;
+  // Overall success status
+  bool success = 2;
+  // Batch error message if any
+  string error_message = 3;
+  // Number of successful operations
+  int32 success_count = 4;
+  // Number of failed operations
+  int32 failure_count = 5;
+  // Total processing time in milliseconds
+  int32 total_processing_time_ms = 6;
+  // Number of requests skipped due to errors
+  int32 skipped_count = 7;
+}
+// LogEventRequest for logging system events
+message LogEventRequest {
+  // Event type or name
+  string event_type = 1;
+  // Event severity
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    DEBUG = 1;
+    INFO = 2;
+    WARNING = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+  }
+  // Event severity level
+  Severity severity = 2;
+  // Event timestamp
+  google.protobuf.Timestamp timestamp = 3;
+  // Event source
+  string source = 4;
+  // Event message
+  string message = 5;
+  // Event data
+  google.protobuf.Struct data = 6;
+  // Event metadata
+  map<string, string> metadata = 7;
+  // Related request ID
+  string request_id = 8;
+  // User or service that triggered the event
+  string user_id = 9;
+}
+// LogEventResponse after logging an event
+message LogEventResponse {
+  // Log entry ID
+  string log_id = 1;
+  // Success status
+  bool success = 2;
+  // Error message if any
+  string error_message = 3;
+}
+// SystemStatus describes the current service health
+message SystemStatus {
+  // Status code
+  enum StatusCode {
+    STATUS_CODE_UNSPECIFIED = 0;
+    STATUS_CODE_HEALTHY = 1;
+    STATUS_CODE_DEGRADED = 2;
+    STATUS_CODE_MAINTENANCE = 3;
+    STATUS_CODE_DOWN = 4;
+  }
+  // Overall system status
+  StatusCode status = 1;
+  // Status message
+  string message = 2;
+  // Status timestamp
+  google.protobuf.Timestamp timestamp = 3;
+  // Component statuses
+  map<string, ComponentStatus> components = 4;
+  // Version information
+  VersionInfo version = 5;
+}
+// ComponentStatus describes status of a system component
+message ComponentStatus {
+  // Component status
+  SystemStatus.StatusCode status = 1;
+  // Status message
+  string message = 2;
+  // Health metrics
+  map<string, string> metrics = 3;
+  // Last check timestamp
+  google.protobuf.Timestamp last_check = 4;
+}
+// VersionInfo contains version details
+message VersionInfo {
+  // Version string
+  string version = 1;
+  // Build identifier
+  string build = 2;
+  // Build timestamp
+  google.protobuf.Timestamp build_timestamp = 3;
+  // Git commit hash
+  string commit = 4;
+  // Environment (production, staging, etc.)
+  string environment = 5;
+}
