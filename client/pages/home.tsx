@@ -1,14 +1,19 @@
 import { useBearContext } from '@client/state/bears'
 import { type FormEvent, useCallback, useState } from 'react'
+import { api } from '@client/api'
 
 const greeting = async (name: string): Promise<string> => {
 	const message = await invoke<string>('greet', { name })
 	return message
 }
-
 const math = async (a: number, b: number): Promise<number> => {
 	const sum = await invoke<number>('math', { a, b })
 	return sum
+}
+
+const plugin = async () => {
+	await invoke<null>('plugin', {})
+	return
 }
 
 export const Home: React.FC = () => {
@@ -18,7 +23,6 @@ export const Home: React.FC = () => {
 	const [name, setName] = useState<string>('')
 	const [sum, setSum] = useState<string>('')
 	const [vars, setVars] = useState<[number, number]>([0, 0])
-
 	const greet = useCallback(async () => {
 		try {
 			const message = await greeting(name)
@@ -29,7 +33,6 @@ export const Home: React.FC = () => {
 			setGreetMsg('An error occurred while processing.')
 		}
 	}, [name, vars])
-
 	const calculate = useCallback(async () => {
 		try {
 			const calculatedSum = await math(vars[0], vars[1])
@@ -38,7 +41,6 @@ export const Home: React.FC = () => {
 			setSum('An error occurred while processing.')
 		}
 	}, [vars])
-
 	const handleNameSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		if (!name) {
@@ -47,7 +49,6 @@ export const Home: React.FC = () => {
 		}
 		greet()
 	}
-
 	const handleMathSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		if (vars[0] === undefined || vars[1] === undefined) {
@@ -56,13 +57,22 @@ export const Home: React.FC = () => {
 		}
 		calculate()
 	}
-
 	const clearAll = () => {
 		setName('')
 		setVars([0, 0])
 		setGreetMsg('')
 		setSum('')
 		removeAllBears()
+	}
+
+	const request = async () => {
+		const message = {
+			version: Number('0.0.1'),
+			endpoint: '/api/v1/greet',
+			payload: '',
+		}
+		const data = await api.request.retrieve(message)
+		return { data }
 	}
 
 	return (
@@ -120,6 +130,19 @@ export const Home: React.FC = () => {
 				</button>
 				<button className='btn btn-accent' type='button' onClick={clearAll}>
 					Clear All
+				</button>
+				<button
+					className='btn btn-primary'
+					type='button'
+					onClick={async () => {
+						await plugin()
+						console.log('Plugin executed')
+					}}
+				>
+					plugin
+				</button>
+				<button className='btn btn-accent' type='button' onClick={request}>
+					api
 				</button>
 			</div>
 		</div>

@@ -33,7 +33,6 @@ export const Settings: React.FC = () => {
 		<div className='container mx-auto p-4'>
 			<h1 className='mb-6 text-3xl font-bold'>Space Settings</h1>
 			<div className='grid gap-6 md:grid-cols-2'>
-				{/* General Settings */}
 				<div className='card bg-base-100 shadow-xl'>
 					<div className='card-body'>
 						<h2 className='card-title mb-4'>
@@ -55,7 +54,6 @@ export const Settings: React.FC = () => {
 						</div>
 					</div>
 				</div>
-				{/* Privacy Settings */}
 				<div className='card bg-base-100 shadow-xl'>
 					<div className='card-body'>
 						<h2 className='card-title mb-4'>
@@ -79,7 +77,6 @@ export const Settings: React.FC = () => {
 						</div>
 					</div>
 				</div>
-				{/* Notification Settings */}
 				<div className='card bg-base-100 shadow-xl'>
 					<div className='card-body'>
 						<h2 className='card-title mb-4'>
