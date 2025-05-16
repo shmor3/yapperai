@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@biomejs/biome'
   - '@bufbuild/buf'
+  - '@tailwindcss/oxide'
   - esbuild
   - protobufjs
