@@ -7,7 +7,7 @@ const greeting = async (name: string): Promise<string> => {
 	return message
 }
 const math = async (a: number, b: number): Promise<number> => {
-	const sum = await invoke<number>('math', { a, b })
+	const sum = await invoke<number>('sum', { a, b })
 	return sum
 }
 
@@ -30,7 +30,7 @@ export const Home: React.FC = () => {
 			setSum(calculatedSum.toString())
 			setGreetMsg(message)
 		} catch (error) {
-			setGreetMsg('An error occurred while processing.')
+			setGreetMsg(`An error occurred while processing. ${error}`)
 		}
 	}, [name, vars])
 	const calculate = useCallback(async () => {
@@ -38,7 +38,7 @@ export const Home: React.FC = () => {
 			const calculatedSum = await math(vars[0], vars[1])
 			setSum(calculatedSum.toString())
 		} catch (error) {
-			setSum('An error occurred while processing.')
+			setSum(`An error occurred while processing. ${error}`)
 		}
 	}, [vars])
 	const handleNameSubmit = (e: FormEvent<HTMLFormElement>) => {

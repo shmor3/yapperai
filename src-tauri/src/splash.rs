@@ -4,13 +4,13 @@ use tauri::{AppHandle, Manager};
 use tokio::time::{sleep, Duration};
 
 #[tauri::command]
-pub fn close_splash(app: AppHandle) {
+pub fn close(app: AppHandle) {
   app.get_webview_window("splash").unwrap().close().unwrap();
   app.get_webview_window("main").unwrap().show().unwrap();
 }
 
 #[tauri::command]
-pub async fn upd_status() -> Result<Vec<(String, u8)>, String> {
+pub async fn status() -> Result<Vec<(String, u8)>, String> {
   let steps = vec!["Checking for updates..."];
   let mut results = Vec::new();
   for (i, step) in steps.iter().enumerate() {
