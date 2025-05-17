@@ -7,7 +7,3 @@ declare global {
 		options?: InvokeOptions,
 	): Promise<T>
 }
-
-declare module 'protobufjs/minimal' {
-	export * from 'protobufjs'
-}
