@@ -1,4 +1,4 @@
-import { useBearContext } from '@client/state/bears'
+import { useBearContext } from '@state/bears'
 import { type FormEvent, useCallback, useState } from 'react'
 import { api } from '@client/api'
 

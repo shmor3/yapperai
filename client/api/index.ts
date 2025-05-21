@@ -1,4 +1,4 @@
-import { connect } from '../../services/connect'
+import { connect } from '@services/connect'
 
 const request = {
 	create: connect.create,
