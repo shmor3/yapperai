@@ -1,6 +1,6 @@
 import { SidebarButton } from '@client/partials/sidebar/button'
 import { Items, getItemIndexById } from '@client/partials/sidebar/items'
-import { useBearContext } from '@client/state/bears'
+import { useBearContext } from '@state/bears'
 import type React from 'react'
 import { useEffect, useState, useRef } from 'react'
 

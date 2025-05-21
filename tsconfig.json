@@ -1,40 +1,85 @@
 {
-	"include": ["client", "utils", "services/download.ts", "global.d.ts"],
-	"exclude": ["node_modules", ".history"],
-	"compilerOptions": {
-		"lib": ["DOM", "DOM.Iterable", "ES2022"],
-		"types": ["@react-router/node", "vite/client", "./types"],
-		"target": "ES2022",
-		"module": "ESNEXT",
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
-		"experimentalDecorators": true,
-		"jsx": "react-jsx",
-		"baseUrl": ".",
-		"paths": {
-			"@client/*": ["./client/*"],
-			"@styles/*": ["./client/styles/*"],
-			"@pages/*": ["./client/pages/*"],
-			"@types/*": ["./types/*"],
-			"@utils/*": ["utils/*"],
-			"@rr/*": ["./.react-router/types/client/*"]
-		},
-		"forceConsistentCasingInFileNames": true,
-		"noFallthroughCasesInSwitch": true,
-		"noUnusedParameters": true,
-		"noUnusedLocals": true,
-		"allowImportingTsExtensions": true,
-		"esModuleInterop": true,
-		"isolatedModules": true,
-		"verbatimModuleSyntax": true,
-		"noEmit": true,
-		"skipLibCheck": true,
-		"strict": true,
-		"allowJs": true,
-		"rootDirs": [".", "./.react-router/types"],
-		"plugins": [{ "name": "@react-router/dev" }]
-	},
-	"ts-node": {
-		"experimentalSpecifierResolution": "node"
-	}
+  "include": [
+    "client",
+    "utils",
+    "services/download.ts",
+    "global.d.ts",
+    "state"
+  ],
+  "exclude": [
+    "node_modules",
+    ".history"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "types": [
+      "@react-router/node",
+      "vite/client",
+      "./types"
+    ],
+    "target": "ES2022",
+    "module": "ESNEXT",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@client/*": [
+        "./client/*"
+      ],
+      "@styles/*": [
+        "./client/styles/*"
+      ],
+      "@pages/*": [
+        "./client/pages/*"
+      ],
+      "@types/*": [
+        "./types/*"
+      ],
+      "@utils/*": [
+        "utils/*"
+      ],
+      "@rr/*": [
+        "./.react-router/types/client/*"
+      ],
+      "@state/*": [
+        "./state/*"
+      ],
+      "@store/*": [
+        "./store/*"
+      ],
+      "@services/*": [
+        "./services/*"
+      ],
+    },
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "allowJs": true,
+    "rootDirs": [
+      ".",
+      "./.react-router/types"
+    ],
+    "plugins": [
+      {
+        "name": "@react-router/dev"
+      }
+    ]
+  },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  }
 }
