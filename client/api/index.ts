@@ -1,6 +1,6 @@
 import { connect } from '@services/connect'
 
-const request = {
+const connrpc = {
 	create: connect.create,
 	retrieve: connect.retrieve,
 	update: connect.update,
@@ -8,5 +8,5 @@ const request = {
 }
 
 export const api = {
-	request,
+	connrpc,
 }

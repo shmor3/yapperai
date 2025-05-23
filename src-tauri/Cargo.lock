@@ -6445,11 +6445,13 @@ version = "0.1.0"
 dependencies = [
  "extism",
  "log",
+ "once_cell",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-log",
+ "thiserror 1.0.69",
  "tokio",
 ]
 

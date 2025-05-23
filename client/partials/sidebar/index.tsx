@@ -3,7 +3,6 @@ import { Items, getItemIndexById } from '@client/partials/sidebar/items'
 import { useBearContext } from '@state/bears'
 import type React from 'react'
 import { useEffect, useState, useRef } from 'react'
-
 export const Sidebar: React.FC = () => {
 	const { activeTab, handleTabChange } = useBearContext()
 	const [state, setState] = useState({
@@ -11,7 +10,6 @@ export const Sidebar: React.FC = () => {
 		showOverflow: false,
 	})
 	const sidebarRef = useRef<HTMLDivElement>(null)
-
 	useEffect(() => {
 		const updateOverflow = () => {
 			const sidebar = sidebarRef.current
@@ -35,22 +33,18 @@ export const Sidebar: React.FC = () => {
 		window.addEventListener('resize', updateOverflow)
 		return () => window.removeEventListener('resize', updateOverflow)
 	}, [])
-
 	const toggleOverflow = () => {
 		setState((prevState) => ({
 			...prevState,
 			showOverflow: !prevState.showOverflow,
 		}))
 	}
-
 	const handleNavigation = (itemId: string) => {
 		handleTabChange(getItemIndexById(itemId))
 	}
-
 	const homeItem = Items[0]
-	const settingsItem = Items[Items.length - 1]
+	const pluginIcon = Items[Items.length - 1]
 	const otherItems = Items.slice(1, -1)
-
 	return (
 		<div
 			ref={sidebarRef}
@@ -137,14 +131,14 @@ export const Sidebar: React.FC = () => {
 				</ul>
 				<div className='mt-auto mb-4 w-full'>
 					<SidebarButton
-						id={settingsItem.id}
-						icon={settingsItem.icon}
+						id={pluginIcon.id}
+						icon={pluginIcon.icon}
 						active={(activeTab === Items.length - 1).toString()}
 						setActive={() => handleTabChange(Items.length - 1)}
-						onClick={() => handleNavigation(settingsItem.id)}
+						onClick={() => handleNavigation(pluginIcon.id)}
 						className='h-[4rem] w-full'
 					>
-						{settingsItem.id}
+						{pluginIcon.id}
 					</SidebarButton>
 				</div>
 			</nav>
