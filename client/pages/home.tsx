@@ -1,7 +1,6 @@
 import { useBearContext } from '@state/bears'
 import { type FormEvent, useCallback, useState } from 'react'
 import { api } from '@client/api'
-
 const greeting = async (name: string): Promise<string> => {
 	const message = await invoke<string>('greet', { name })
 	return message
@@ -10,12 +9,6 @@ const math = async (a: number, b: number): Promise<number> => {
 	const sum = await invoke<number>('sum', { a, b })
 	return sum
 }
-
-const plugin = async () => {
-	await invoke<null>('plugin', {})
-	return
-}
-
 export const Home: React.FC = () => {
 	const { bears, increasePopulation, decreasePopulation, removeAllBears } =
 		useBearContext()
@@ -64,17 +57,15 @@ export const Home: React.FC = () => {
 		setSum('')
 		removeAllBears()
 	}
-
 	const request = async () => {
 		const message = {
 			version: Number('0.0.1'),
 			endpoint: '/api/v1/greet',
 			payload: '',
 		}
-		const data = await api.request.retrieve(message)
+		const data = await api.connrpc.retrieve(message)
 		return { data }
 	}
-
 	return (
 		<div className='flex flex-col w-full h-full items-center justify-center space-y-6'>
 			<p className='text-lg'>Bears: {bears}</p>
@@ -130,16 +121,6 @@ export const Home: React.FC = () => {
 				</button>
 				<button className='btn btn-accent' type='button' onClick={clearAll}>
 					Clear All
-				</button>
-				<button
-					className='btn btn-primary'
-					type='button'
-					onClick={async () => {
-						await plugin()
-						console.log('Plugin executed')
-					}}
-				>
-					plugin
 				</button>
 				<button className='btn btn-accent' type='button' onClick={request}>
 					api

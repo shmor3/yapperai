@@ -1,6 +1,12 @@
 import { Home } from '@client/pages/home'
-import { Settings } from '@client/pages/settings'
-import { GearIcon, HomeIcon } from '@primer/octicons-react'
+import { Plugins } from '@client/pages/plugins'
+import {
+	HomeIcon,
+	TypographyIcon,
+	CommentIcon,
+	NumberIcon,
+	PackageIcon,
+} from '@primer/octicons-react'
 import type React from 'react'
 
 interface ItemType {
@@ -15,11 +21,25 @@ export const Items: ItemType[] = [
 		component: Home,
 		icon: <HomeIcon className='fill-current' />,
 	},
-	// Add any other items
 	{
-		id: 'settings',
-		component: Settings,
-		icon: <GearIcon className='fill-current' />,
+		id: 'chat',
+		component: Plugins,
+		icon: <CommentIcon className='fill-current' />,
+	},
+	{
+		id: 'math-sum',
+		component: Plugins,
+		icon: <NumberIcon className='fill-current' />,
+	},
+	{
+		id: 'count-vowels',
+		component: Plugins,
+		icon: <TypographyIcon className='fill-current' />,
+	},
+	{
+		id: 'plugins',
+		component: Plugins,
+		icon: <PackageIcon className='fill-current' />,
 	},
 ]
 

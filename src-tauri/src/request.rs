@@ -3,7 +3,7 @@
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct Message {
+pub struct Message {
   payload: String,
 }
 
