@@ -1,19 +1,19 @@
 import { Logo } from '@client/components/logo'
 import { useState, useCallback, useEffect } from 'react'
 
-const update = async (): Promise<Array<[string, number]>> => {
-	const status = await invoke<Array<[string, number]>>('status', {})
+const update = async (): Promise<Array<[string, number, string]>> => {
+	const status = await invoke<Array<[string, number, string]>>('status', {})
 	return status
 }
 
 const initPlugins = async (
-	pluginId: string,
-	pluginUrl?: string,
+	plugin_Id: string,
+	plugin_Url?: string,
 ): Promise<boolean> => {
 	try {
 		await invoke<void>('plugin_init', {
-			plugin_id: pluginId,
-			plugin_url: pluginUrl,
+			plugin_id: plugin_Id,
+			plugin_url: plugin_Url,
 		})
 		return true
 	} catch (error) {
@@ -23,7 +23,7 @@ const initPlugins = async (
 }
 
 export const Splash: React.FC = () => {
-	const [status, setStatus] = useState<[string, number]>(['', 0])
+	const [status, setStatus] = useState<[string, number, string]>(['', 0, ''])
 	const [pluginsInitialized, setPluginsInitialized] = useState<boolean>(false)
 	const checkUpdate = useCallback(async () => {
 		try {
@@ -33,31 +33,31 @@ export const Splash: React.FC = () => {
 				await new Promise((resolve) => setTimeout(resolve, 100))
 			}
 		} catch (error) {
-			setStatus(['An error occurred while processing.', 0])
+			setStatus(['An error occurred while processing.', 0, ''])
 		}
 	}, [])
 	const initializePlugins = useCallback(async () => {
-		setStatus(['Initializing plugins...', 50])
+		setStatus(['Initializing plugins...', 50, ''])
 		try {
 			const result = await initPlugins('count_vowels', 'count_vowels')
 			if (result) {
-				setStatus(['Plugins initialized successfully', 100])
+				setStatus(['Plugins initialized successfully', 100, ''])
 				setPluginsInitialized(true)
 				return true
 			}
-			setStatus(['Failed to initialize plugins', 0])
+			setStatus(['Failed to initialize plugins', 0, ''])
 			setPluginsInitialized(false)
 			return false
 		} catch (error) {
 			console.error('Error initializing plugins:', error)
-			setStatus(['Error initializing plugins', 0])
+			setStatus([`Error initializing plugins: ${error}`, 0, ''])
 			setPluginsInitialized(false)
 			return false
 		}
 	}, [])
-	const closeApplication = useCallback(async () => {
+	const closeSplash = useCallback(async () => {
 		try {
-			await invoke('close')
+			await invoke('close_slash', {})
 		} catch (error) {
 			console.error('Error closing application:', error)
 		}
@@ -67,23 +67,27 @@ export const Splash: React.FC = () => {
 			await checkUpdate()
 			const success = await initializePlugins()
 			if (!success) {
-				await new Promise((resolve) => setTimeout(resolve, 2000))
+				await new Promise((resolve) => setTimeout(resolve, 5000))
+				// await invoke('close_app', {})
+			} else {
+				if (pluginsInitialized) {
+					await closeSplash()
+				}
 			}
-			await closeApplication()
 		}
 		startup()
-	}, [checkUpdate, initializePlugins, closeApplication])
+	}, [checkUpdate, initializePlugins, pluginsInitialized, closeSplash])
 	return (
-		<div className='flex flex-col justify-center items-center p-7 w-full h-full bg-base-100'>
-			<div className='flex justify-center items-center mb-10'>
+		<div className='card-sm flex flex-col justify-center items-center p-7 w-full h-full bg-base-100 shadow-sm'>
+			<figure className='px-10 pt-10'>
 				<Logo size={96} />
-			</div>
-			<div className='p-5'>
-				<p>Status: {status[0]}</p>
-				<p>Progress: {status[1]}%</p>
-				{pluginsInitialized && (
-					<p className='text-success'>Plugins initialized successfully</p>
-				)}
+			</figure>
+			<div className='card-body items-center text-center'>
+				<div className='card-actions'>
+					(status[1] {'>'} 0 ? ({' '}
+					<progress className='progress w-56' value={status[1]} max='100' />) :
+					( <p className='text-xs'>{status[2]}</p>))
+				</div>
 			</div>
 		</div>
 	)

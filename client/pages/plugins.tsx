@@ -1,24 +1,31 @@
 import { useState, useEffect } from 'react'
-
 const listPlugins = async (): Promise<string[]> => {
 	const plugins = await invoke<string[]>('list_plugins')
 	return plugins
 }
-
-const unloadPlugin = async (pluginName: string): Promise<boolean> => {
-	const result = await invoke<boolean>('unload_plugin', { pluginName })
-	return result
+const unloadPlugin = async (pluginId: string): Promise<boolean> => {
+	try {
+		const result = await invoke<boolean>('unload_plugin', {
+			plugin_id: pluginId,
+		})
+		return result
+	} catch (error) {
+		console.error('Error unloading plugin:', error)
+		return false
+	}
 }
-
 const callPlugin = async <T = unknown>(
-	pluginName: string,
+	pluginId: string,
 	method: string,
 	args: Record<string, unknown>,
 ): Promise<T> => {
-	const result = await invoke<T>('call_plugin', { pluginName, method, args })
+	const result = await invoke<T>('call_plugin', {
+		plugin_name: pluginId,
+		method,
+		args,
+	})
 	return result
 }
-
 export const Plugins: React.FC = () => {
 	const [vowelsInput, setVowelsInput] = useState<string>('')
 	const [vowels, setVowelsResult] = useState<string>('')
@@ -41,7 +48,6 @@ export const Plugins: React.FC = () => {
 		}
 		checkForVowelsPlugin()
 	}, [])
-
 	const handleCountVowels = async () => {
 		if (!vowelsPluginAvailable || !vowelsInput) return
 		try {
@@ -54,7 +60,6 @@ export const Plugins: React.FC = () => {
 			setVowelsResult('Error')
 		}
 	}
-
 	const handleListPlugins = async () => {
 		try {
 			const pluginList = await listPlugins()
@@ -67,7 +72,6 @@ export const Plugins: React.FC = () => {
 			setPluginResult(`Error listing plugins: ${error}`)
 		}
 	}
-
 	const handleUnloadPlugin = async () => {
 		try {
 			if (!selectedPlugin) {
@@ -81,7 +85,6 @@ export const Plugins: React.FC = () => {
 			setPluginResult(`Error unloading plugin: ${error}`)
 		}
 	}
-
 	const handleCallPlugin = async () => {
 		try {
 			if (!selectedPlugin) {
@@ -99,13 +102,18 @@ export const Plugins: React.FC = () => {
 				setPluginResult(`Invalid JSON arguments: ${e}`)
 				return
 			}
+			console.log(
+				`Calling plugin: ${selectedPlugin}, method: ${pluginMethod}, args:`,
+				parsedArgs,
+			)
 			const result = await callPlugin(selectedPlugin, pluginMethod, parsedArgs)
+			console.log(`Plugin call result: ${result}`)
 			setPluginResult(`Plugin call result: ${JSON.stringify(result)}`)
 		} catch (error) {
+			console.error('Error calling plugin:', error)
 			setPluginResult(`Error calling plugin: ${error}`)
 		}
 	}
-
 	return (
 		<div className='flex flex-col w-full h-full items-center justify-center space-y-6'>
 			<div className='flex flex-col space-y-2 w-full max-w-2xl'>

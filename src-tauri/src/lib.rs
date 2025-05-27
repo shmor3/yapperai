@@ -6,6 +6,7 @@ mod plugins;
 mod request;
 mod splash;
 mod update;
+mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -14,11 +15,12 @@ pub fn run() {
     .menu(tauri::menu::Menu::default)
     .plugin(tauri_plugin_log::Builder::new().build())
     .invoke_handler(tauri::generate_handler![
+      utils::close_app,
       plugins::plugin_init,
       plugins::call_plugin,
       plugins::list_plugins,
       plugins::unload_plugin,
-      splash::close,
+      utils::close_splash,
       splash::status,
       math::greet,
       math::sum,
@@ -30,5 +32,5 @@ pub fn run() {
       env::set_app_env,
     ])
     .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    .expect("error while running application");
 }
