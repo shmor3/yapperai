@@ -1,16 +1,8 @@
-use crate::plugins;
 use crate::update;
-use tauri::{AppHandle, Manager};
 use tokio::time::{sleep, Duration};
 
 #[tauri::command]
-pub fn close(app: AppHandle) {
-  app.get_webview_window("splash").unwrap().close().unwrap();
-  app.get_webview_window("main").unwrap().show().unwrap();
-}
-
-#[tauri::command]
-pub async fn status() -> Result<Vec<(String, u8)>, String> {
+pub async fn status() -> Result<Vec<(String, u8, String)>, String> {
   let steps = vec![
     "Checking for updates",
     "Loading resources",
@@ -24,7 +16,7 @@ pub async fn status() -> Result<Vec<(String, u8)>, String> {
     } else {
       100
     };
-    results.push((step.to_string(), progress as u8));
+    results.push((step.to_string(), progress as u8, String::new()));
     match i {
       0 => {
         let update_result = update::update_app().await;
@@ -33,11 +25,11 @@ pub async fn status() -> Result<Vec<(String, u8)>, String> {
         }
       }
       2 => {
-        if let Err(e) =
-          plugins::plugin_init("count_vowels".to_string(), Some("count_vowels".to_string()))
-        {
-          return Err(format!("Plugin initialization failed: {}", e));
-        }
+        return Ok(vec![(
+          "Plugin initialization".to_string(),
+          1,
+          "Initializing...".to_string(),
+        )]);
       }
       _ => {}
     }

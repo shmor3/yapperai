@@ -1,3 +1,5 @@
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
 use extism::*;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -45,15 +47,15 @@ pub fn plugin_init(plugin_id: String, plugin_url: Option<String>) -> Result<(), 
 
 #[tauri::command]
 pub fn call_plugin(
-  plugin_name: String,
+  plugin_id: String,
   method: String,
   args: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
   let input = args.to_string();
   let mut registry = get_registry().map_err(|e| e.to_string())?;
   let plugin = registry
-    .get_mut(&plugin_name)
-    .ok_or_else(|| format!("Plugin '{}' not initialized", plugin_name))?;
+    .get_mut(&plugin_id)
+    .ok_or_else(|| format!("Plugin '{}' not initialized", plugin_id))?;
   let result = plugin
     .call(&method, input.as_bytes().to_vec())
     .map(|output: Vec<u8>| {
