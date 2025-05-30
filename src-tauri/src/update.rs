@@ -27,7 +27,8 @@ async fn check_update() -> bool {
 async fn perform_update() -> Result<String, String> {
   sleep(Duration::from_millis(1000)).await;
   if check_update().await == false {
-    return Err("No update available".to_string());
+    let update_result = "No update available".to_string();
+    return Ok(update_result);
   }
   let update_result = "Update successful".to_string();
   Ok(update_result)
