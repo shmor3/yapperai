@@ -28,14 +28,15 @@ fn get_registry() -> PluginResult<std::sync::MutexGuard<'static, HashMap<String,
   PLUGIN_REGISTRY.lock().map_err(|_| PluginError::LockError)
 }
 
-#[tauri::command]
-pub fn plugin_init(plugin_id: String, plugin_url: Option<String>) -> Result<(), String> {
-  let url = plugin_url.unwrap_or_else(|| {
+pub fn plugin_init(plugin_id: String, plugin_url: String) -> Result<(), String> {
+  let url = if plugin_url.is_empty() {
     format!(
       "https://github.com/extism/plugins/releases/latest/download/{}.wasm",
       plugin_id
     )
-  });
+  } else {
+    plugin_url
+  };
   let wasm_url = Wasm::url(&url);
   let manifest = Manifest::new([wasm_url]);
   let plugin = Plugin::new(&manifest, [], true)

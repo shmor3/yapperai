@@ -20,51 +20,35 @@ const callPlugin = async <T = unknown>(
 	args: Record<string, unknown>,
 ): Promise<T> => {
 	const result = await invoke<T>('call_plugin', {
-		plugin_name: pluginId,
+		pluginId: pluginId,
 		method,
 		args,
 	})
 	return result
 }
 export const Plugins: React.FC = () => {
-	const [vowelsInput, setVowelsInput] = useState<string>('')
-	const [vowels, setVowelsResult] = useState<string>('')
 	const [plugins, setPlugins] = useState<string[]>([])
 	const [selectedPlugin, setSelectedPlugin] = useState<string>('')
 	const [pluginMethod, setPluginMethod] = useState<string>('')
 	const [pluginArgs, setPluginArgs] = useState<string>('')
 	const [pluginResult, setPluginResult] = useState<string>('')
-	const [vowelsPluginAvailable, setVowelsPluginAvailable] =
-		useState<boolean>(false)
+	useState<boolean>(false)
 	useEffect(() => {
 		const checkForVowelsPlugin = async () => {
 			try {
 				const pluginList = await listPlugins()
 				setPlugins(pluginList)
-				setVowelsPluginAvailable(pluginList.includes('count_vowels'))
 			} catch (error) {
 				console.error('Error checking for vowels plugin:', error)
 			}
 		}
 		checkForVowelsPlugin()
 	}, [])
-	const handleCountVowels = async () => {
-		if (!vowelsPluginAvailable || !vowelsInput) return
-		try {
-			const result = await callPlugin<number>('count_vowels', 'count_vowels', {
-				text: vowelsInput,
-			})
-			setVowelsResult(`${result}`)
-		} catch (error) {
-			console.error('Error counting vowels:', error)
-			setVowelsResult('Error')
-		}
-	}
+
 	const handleListPlugins = async () => {
 		try {
 			const pluginList = await listPlugins()
 			setPlugins(pluginList)
-			setVowelsPluginAvailable(pluginList.includes('count_vowels'))
 			setPluginResult(
 				`Found ${pluginList.length} plugins: ${pluginList.join(', ')}`,
 			)
@@ -116,32 +100,6 @@ export const Plugins: React.FC = () => {
 	}
 	return (
 		<div className='flex flex-col w-full h-full items-center justify-center space-y-6'>
-			<div className='flex flex-col space-y-2 w-full max-w-2xl'>
-				<h3 className='text-xl font-bold'>Count Vowels Example</h3>
-				<div className='flex flex-row space-x-2'>
-					<input
-						className='input input-bordered flex-grow'
-						value={vowelsInput}
-						onChange={(e) => setVowelsInput(e.target.value)}
-						placeholder='Enter text to count vowels'
-						disabled={!vowelsPluginAvailable}
-					/>
-					<button
-						className='btn btn-primary'
-						type='button'
-						onClick={handleCountVowels}
-						disabled={!vowelsPluginAvailable || !vowelsInput}
-					>
-						Count Vowels
-					</button>
-				</div>
-				<p className='text-lg'>Vowels count: {vowels || '?'}</p>
-				{!vowelsPluginAvailable && (
-					<p className='text-sm text-yellow-500'>
-						Vowels plugin is not available. Please check plugin status.
-					</p>
-				)}
-			</div>
 			<div className='flex flex-col space-y-4 w-full max-w-2xl border p-4 rounded-lg'>
 				<h3 className='text-xl font-bold'>Plugin Management</h3>
 				<p className='text-lg'>
