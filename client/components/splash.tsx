@@ -1,31 +1,27 @@
 import { Logo } from '@client/components/logo'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 type StatusUpdate = [string, number, string]
 
 const fetchStatus = async (): Promise<StatusUpdate[]> => {
 	try {
-		const status = await invoke<StatusUpdate[]>('status')
-		return status
+		return await invoke<StatusUpdate[]>('status')
 	} catch (error) {
 		console.error('Error fetching status:', error)
 		return [['Error fetching status', 0, String(error)]]
 	}
 }
 
-const initPlugins = async (
-	pluginId: string,
-	pluginUrl?: string,
-): Promise<boolean> => {
+const closeSplash = async () => {
 	try {
-		await invoke<void>('plugin_init', {
-			plugin_id: pluginId,
-			plugin_url: pluginUrl,
-		})
-		return true
+		await invoke('close_splash')
 	} catch (error) {
-		console.error('Failed to initialize plugins:', error)
-		return false
+		console.error('Error closing splash screen:', error)
+		try {
+			await invoke('close_app')
+		} catch (secondError) {
+			console.error('Failed to close application:', secondError)
+		}
 	}
 }
 
@@ -35,79 +31,56 @@ export const Splash: React.FC = () => {
 		0,
 		'Please wait...',
 	])
-	const [isComplete, setIsComplete] = useState<boolean>(false)
-	const processStatusUpdates = useCallback(async () => {
-		try {
-			const statusUpdates = await fetchStatus()
-			for (const update of statusUpdates) {
-				setStatus(update)
-				await new Promise((resolve) => setTimeout(resolve, 150))
-			}
-			if (statusUpdates.length > 0) {
-				const firstUpdate = statusUpdates[0]
-				if (firstUpdate[0] === 'Initializing plugins') {
-					return await handlePluginInitialization()
-				}
-				const finalUpdate = statusUpdates[statusUpdates.length - 1]
-				if (finalUpdate[1] === 100) {
-					setIsComplete(true)
-				}
-			}
-			return true
-		} catch (error) {
-			setStatus(['Error during startup', 0, `An error occurred: ${error}`])
-			return false
+	const [isComplete, setIsComplete] = useState(false)
+	const [hasError, setHasError] = useState(false)
+	const pollingRef = useRef<NodeJS.Timeout | null>(null)
+
+	const pollStatus = useCallback(async () => {
+		const updates = await fetchStatus()
+		const last = updates[updates.length - 1]
+		setStatus(last)
+		if (last[1] === 100) {
+			setIsComplete(true)
+			return
+		}
+		if (last[0].toLowerCase().includes('error')) {
+			setHasError(true)
+			return
 		}
 	}, [])
-	const handlePluginInitialization = useCallback(async () => {
-		try {
-			const result = await initPlugins('count_vowels', 'count_vowels')
-			if (result) {
-				setStatus(['Initialization complete', 100, 'Ready to launch!'])
-				setIsComplete(true)
-				return true
-			}
-			setStatus([
-				'Plugin initialization failed',
-				0,
-				'Could not initialize required plugins',
-			])
-			return false
-		} catch (error) {
-			setStatus(['Plugin error', 0, `Error: ${error}`])
-			return false
-		}
-	}, [])
-	const closeSplash = useCallback(async () => {
-		try {
-			await invoke('close_splash')
-		} catch (error) {
-			console.error('Error closing splash screen:', error)
-			try {
-				await invoke('close_app')
-			} catch (secondError) {
-				console.error('Failed to close application:', secondError)
-			}
-		}
-	}, [])
+
 	useEffect(() => {
-		const startup = async () => {
-			const success = await processStatusUpdates()
-			if (success && isComplete) {
-				await new Promise((resolve) => setTimeout(resolve, 1000))
-				await closeSplash()
-			} else if (!success) {
-				await new Promise((resolve) => setTimeout(resolve, 5000))
-				await closeSplash()
+		if (isComplete || hasError) {
+			const timeout = setTimeout(
+				() => {
+					if (pollingRef.current) {
+						clearInterval(pollingRef.current)
+						pollingRef.current = null
+					}
+					closeSplash()
+				},
+				isComplete ? 1000 : 4000,
+			)
+			return () => clearTimeout(timeout)
+		}
+		pollingRef.current = setInterval(() => {
+			pollStatus()
+		}, 300)
+		pollStatus()
+		return () => {
+			if (pollingRef.current) {
+				clearInterval(pollingRef.current)
+				pollingRef.current = null
 			}
 		}
-		startup()
-	}, [processStatusUpdates, isComplete, closeSplash])
+	}, [isComplete, hasError, pollStatus])
+
 	const getProgressColor = (progress: number): string => {
 		if (progress < 30) return 'progress-error'
 		if (progress < 70) return 'progress-warning'
 		return 'progress-success'
 	}
+
 	return (
 		<div className='card-sm flex flex-col justify-center items-center p-7 w-full h-full bg-base-100'>
 			<figure className='px-10 pt-10 pb-6'>
@@ -116,7 +89,7 @@ export const Splash: React.FC = () => {
 			<div className='card-body items-center text-center'>
 				<h3 className='card-title text-lg mb-2'>{status[0]}</h3>
 				<div className='card-actions flex flex-col items-center w-full'>
-					{status[1] > 0 ? (
+					{status[1] > 0 && status[1] < 100 ? (
 						<>
 							<progress
 								className={`progress w-56 ${getProgressColor(status[1])}`}
@@ -129,7 +102,14 @@ export const Splash: React.FC = () => {
 							</div>
 						</>
 					) : (
-						<p className='text-xs mt-2'>{status[2] || 'Starting...'}</p>
+						<p className='text-xs mt-2'>
+							{status[2] ||
+								(isComplete
+									? 'Startup complete!'
+									: hasError
+										? 'Startup failed'
+										: 'Starting...')}
+						</p>
 					)}
 				</div>
 			</div>

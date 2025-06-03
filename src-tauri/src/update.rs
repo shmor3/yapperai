@@ -1,35 +1,33 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use tokio::time::{sleep, Duration};
 
-pub async fn update_app() -> String {
+pub async fn perform_update() -> String {
   sleep(Duration::from_millis(1000)).await;
-  if perform_update().await.is_err() {
-    return "Update failed".to_string();
-  }
-  let update_result = "Update successful".to_string();
-  update_result
+  "Update completed successfully".to_string()
 }
 
-fn current_version() -> String {
-  let update_version = "0.1.0".to_string();
-  update_version
+async fn current_version() -> String {
+  sleep(Duration::from_millis(500)).await;
+  "0.1.0".to_string()
 }
 
-async fn check_update() -> bool {
-  sleep(Duration::from_millis(1000)).await;
-  if current_version() == "0.1.0" {
-    return false;
-  }
-  true
+async fn latest_version() -> String {
+  sleep(Duration::from_millis(500)).await;
+  "0.1.1".to_string()
 }
 
-async fn perform_update() -> Result<String, String> {
-  sleep(Duration::from_millis(1000)).await;
-  if check_update().await == false {
-    let update_result = "No update available".to_string();
-    return Ok(update_result);
+async fn is_update_available() -> Result<bool, String> {
+  let current = current_version().await;
+  let latest = latest_version().await;
+  Ok(current < latest)
+}
+
+pub async fn check_for_updates() -> Result<String, String> {
+  match is_update_available().await {
+    Ok(true) => {
+      let update_result = perform_update().await;
+      Ok(update_result)
+    }
+    Ok(false) => Ok("No update available".to_string()),
+    Err(e) => Err(format!("Failed to check for updates: {}", e)),
   }
-  let update_result = "Update successful".to_string();
-  Ok(update_result)
 }
