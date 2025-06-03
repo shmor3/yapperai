@@ -25,6 +25,26 @@ const closeSplash = async () => {
 	}
 }
 
+function parseStepInfo(statusMsg: string) {
+	const stepMatch = statusMsg.match(
+		/^(Step\s*\d+):\s*(.+?)(?:\s*\((\d+)\/(\d+)\))?$/i,
+	)
+	if (stepMatch) {
+		return {
+			mainStep: stepMatch[1],
+			subStep: stepMatch[2],
+			subStepCurrent: stepMatch[3] ? Number.parseInt(stepMatch[3], 10) : null,
+			subStepTotal: stepMatch[4] ? Number.parseInt(stepMatch[4], 10) : null,
+		}
+	}
+	return {
+		mainStep: statusMsg,
+		subStep: '',
+		subStepCurrent: null,
+		subStepTotal: null,
+	}
+}
+
 export const Splash: React.FC = () => {
 	const [status, setStatus] = useState<StatusUpdate>([
 		'Starting application...',
@@ -37,13 +57,13 @@ export const Splash: React.FC = () => {
 
 	const pollStatus = useCallback(async () => {
 		const updates = await fetchStatus()
-		const last = updates[updates.length - 1]
-		setStatus(last)
-		if (last[1] === 100) {
+		const best = updates.reduce((a, b) => (b[1] > a[1] ? b : a), updates[0])
+		setStatus(best)
+		if (best[1] === 100) {
 			setIsComplete(true)
 			return
 		}
-		if (last[0].toLowerCase().includes('error')) {
+		if (best[0].toLowerCase().includes('error')) {
 			setHasError(true)
 			return
 		}
@@ -52,12 +72,14 @@ export const Splash: React.FC = () => {
 	useEffect(() => {
 		if (isComplete || hasError) {
 			const timeout = setTimeout(
-				() => {
+				async () => {
 					if (pollingRef.current) {
 						clearInterval(pollingRef.current)
 						pollingRef.current = null
 					}
-					closeSplash()
+					await new Promise((resolve) => setTimeout(resolve, 5000)).then(() =>
+						closeSplash(),
+					)
 				},
 				isComplete ? 1000 : 4000,
 			)
@@ -81,35 +103,71 @@ export const Splash: React.FC = () => {
 		return 'progress-success'
 	}
 
+	const { mainStep, subStep, subStepCurrent, subStepTotal } = parseStepInfo(
+		status[0],
+	)
+	const showSubStepProgress = subStepCurrent !== null && subStepTotal !== null
+
+	let subStepPercent = 0
+	if (
+		showSubStepProgress &&
+		typeof subStepCurrent === 'number' &&
+		typeof subStepTotal === 'number' &&
+		subStepTotal > 0
+	) {
+		subStepPercent = Math.round((subStepCurrent / subStepTotal) * 100)
+	}
+
 	return (
 		<div className='card-sm flex flex-col justify-center items-center p-7 w-full h-full bg-base-100'>
 			<figure className='px-10 pt-10 pb-6'>
 				<Logo size={96} />
 			</figure>
 			<div className='card-body items-center text-center'>
-				<h3 className='card-title text-lg mb-2'>{status[0]}</h3>
+				<h3 className='card-title text-lg mb-2'>{mainStep}</h3>
 				<div className='card-actions flex flex-col items-center w-full'>
-					{status[1] > 0 && status[1] < 100 ? (
+					{showSubStepProgress ? (
 						<>
+							<div className='flex justify-between w-56 mb-1'>
+								<p className='text-xs'>{subStep}</p>
+								<p className='text-xs font-bold'>
+									{subStepCurrent}/{subStepTotal}
+								</p>
+							</div>
 							<progress
-								className={`progress w-56 ${getProgressColor(status[1])}`}
-								value={status[1]}
+								className={`progress w-56 ${getProgressColor(subStepPercent)}`}
+								value={subStepPercent}
 								max='100'
 							/>
-							<div className='flex justify-between w-56 mt-1'>
-								<p className='text-xs'>{status[2]}</p>
-								<p className='text-xs font-bold'>{status[1]}%</p>
+							<div className='flex justify-end w-56 mt-1'>
+								<p className='text-xs font-bold'>{subStepPercent}%</p>
 							</div>
 						</>
 					) : (
-						<p className='text-xs mt-2'>
-							{status[2] ||
-								(isComplete
-									? 'Startup complete!'
-									: hasError
-										? 'Startup failed'
-										: 'Starting...')}
-						</p>
+						<>
+							{status[1] > 0 && status[1] < 100 ? (
+								<>
+									<progress
+										className={`progress w-56 ${getProgressColor(status[1])}`}
+										value={status[1]}
+										max='100'
+									/>
+									<div className='flex justify-between w-56 mt-1'>
+										<p className='text-xs'>{status[2]}</p>
+										<p className='text-xs font-bold'>{status[1]}%</p>
+									</div>
+								</>
+							) : (
+								<p className='text-xs mt-2'>
+									{status[2] ||
+										(isComplete
+											? 'Startup complete!'
+											: hasError
+												? 'Startup failed'
+												: 'Starting...')}
+								</p>
+							)}
+						</>
 					)}
 				</div>
 			</div>
