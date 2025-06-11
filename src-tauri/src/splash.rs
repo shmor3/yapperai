@@ -1,164 +1,282 @@
-use crate::update;
-use crate::utils;
+use log::{error, info};
 use once_cell::sync::OnceCell;
-use std::time::{SystemTime, UNIX_EPOCH};
-use tokio::time::{sleep, Duration};
-
-static STATUS_RESULT: OnceCell<Result<Vec<(String, u8, String)>, String>> = OnceCell::new();
-
-#[tauri::command]
-pub async fn status(app_handle: tauri::AppHandle) -> Result<Vec<(String, u8, String)>, String> {
-  utils::wait_until_window_visible(app_handle, "splash").await;
-  if let Some(result) = STATUS_RESULT.get() {
-    return result.clone();
+use parking_lot::RwLock as ParkingLotRwLock;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::time::{sleep, timeout, Duration};
+#[derive(Debug)]
+pub struct Config {
+  operation_timeout: Duration,
+  status_check_timeout: Duration,
+  retry_delay: Duration,
+  max_retries: u32,
+}
+impl Default for Config {
+  fn default() -> Self {
+    Self {
+      operation_timeout: Duration::from_secs(5),
+      status_check_timeout: Duration::from_secs(10),
+      retry_delay: Duration::from_millis(500),
+      max_retries: 2,
+    }
   }
-
-  let steps: Vec<&str> = vec![
-    "Checking for updates",
-    "Preparing environment",
-    "Loading resources",
-    "Initializing plugins",
-    "Finalizing startup",
+}
+type Result<T> = std::result::Result<T, SplashError>;
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct StatusUpdate {
+  pub step: String,
+  pub progress: u8,
+  pub message: String,
+}
+#[derive(Debug, thiserror::Error)]
+pub enum SplashError {
+  #[error("Environment error: {0}")]
+  Environment(String),
+  #[error("Resource error: {0}")]
+  Resource(String),
+  #[error("Plugin error: {0}")]
+  Startup(String),
+  #[error("Timeout error: {0}")]
+  Timeout(String),
+}
+impl From<Box<dyn std::error::Error + Send + Sync>> for SplashError {
+  fn from(error: Box<dyn std::error::Error + Send + Sync>) -> Self {
+    SplashError::Startup(error.to_string())
+  }
+}
+async fn process_steps() -> Result<StatusUpdate> {
+  let steps = vec![
+    ("Checking Updates", check_updates()),
+    ("Setting Up Environment", setup_environment()),
+    ("Loading Resources", load_resources()),
+    ("Initializing Plugins", initialize_plugins()),
+    ("Finalizing Startup", finalize_startup()),
   ];
-  let progress_values = [20, 40, 60, 80, 100];
-  let mut results: Vec<(String, u8, String)> = Vec::new();
-  for (idx, step) in steps.iter().enumerate() {
-    println!("[DEBUG] Step {}: {}", idx, step);
-    results.push((step.to_string(), 0, "Starting...".to_string()));
-    sleep(Duration::from_millis(300)).await;
-    let step_result = match idx {
-      0 => {
-        println!("[DEBUG] Checking for updates...");
-        match check_updates().await {
-          Ok(msg) => {
-            results.push((step.to_string(), progress_values[idx], msg));
-            Ok(())
+  let total_steps = steps.len();
+  let progress_per_step = 100 / total_steps as u8;
+  for (index, (step_name, step_future)) in steps.into_iter().enumerate() {
+    update_progress(step_name, progress_per_step * index as u8, "Starting...").await?;
+    match step_future.await {
+      Ok(message) => {
+        update_progress(step_name, progress_per_step * (index + 1) as u8, &message).await?;
+      }
+      Err(e) => {
+        let error_message = e.to_string();
+        get_state().write().handle_error(step_name, &error_message);
+        return Err(e);
+      }
+    }
+  }
+  INITIALIZATION_COMPLETE.store(true, Ordering::SeqCst);
+  Ok(StatusUpdate {
+    step: "Complete".into(),
+    progress: 100,
+    message: "Initialization complete".into(),
+  })
+}
+async fn check_updates_impl() -> Result<String> {
+  info!("Starting check_updates_impl");
+  let result = with_timeout(
+    Config::default().operation_timeout,
+    retry(
+      || async {
+        info!("Attempting update check...");
+        match do_check_updates().await {
+          Ok(_) => {
+            info!("Update check successful");
+            Ok("updated successfully".to_string())
           }
           Err(e) => {
-            println!("[ERROR] Update check failed: {}", e);
-            Err(format!("Update check failed: {}", e))
+            error!("Update check failed: {}", e);
+            Err(SplashError::Resource(e.to_string()))
           }
         }
-      }
-      1 => {
-        println!("[DEBUG] Preparing environment...");
-        setup_environment()
-          .await
-          .map_err(|e| {
-            println!("[ERROR] Environment failed: {}", e);
-            format!("Environment failed: {}", e)
-          })
-          .map(|_| {
-            results.push((
-              step.to_string(),
-              progress_values[idx],
-              "Environment setup".to_string(),
-            ));
-          })
-      }
-      2 => {
-        println!("[DEBUG] Loading resources...");
-        load_resources()
-          .await
-          .map_err(|e| {
-            println!("[ERROR] Resources loading failed: {}", e);
-            format!("Resources loading failed: {}", e)
-          })
-          .map(|_| {
-            results.push((
-              step.to_string(),
-              progress_values[idx],
-              "Resource loading".to_string(),
-            ));
-          })
-      }
-      3 => {
-        println!("[DEBUG] Initializing plugins...");
-        initialize_plugins()
-          .await
-          .map_err(|e| {
-            println!("[ERROR] Plugin initialization failed: {}", e);
-            format!("Plugin initialization failed: {}", e)
-          })
-          .map(|_| {
-            results.push((
-              step.to_string(),
-              progress_values[idx],
-              "Plugin initialization".to_string(),
-            ));
-          })
-      }
-      4 => {
-        println!("[DEBUG] Finalizing startup...");
-        finalize_startup()
-          .await
-          .map_err(|e| {
-            println!("[ERROR] Startup finalization failed: {}", e);
-            format!("Startup finalization failed: {}", e)
-          })
-          .map(|_| {
-            results.push((
-              step.to_string(),
-              progress_values[idx],
-              "Startup finalization".to_string(),
-            ));
-          })
-      }
-      _ => {
-        println!("[ERROR] Invalid step index: {}", idx);
-        Err(format!("Invalid step index: {}", idx))
-      }
-    };
-
-    if let Err(e) = step_result {
-      return Err(e);
-    }
-
-    sleep(Duration::from_millis(simple_random(200, 600))).await;
-  }
-
-  println!(
-    "[DEBUG] Finished all steps, returning results: {:?}",
-    results
-  );
-  for result in &results {
-    println!("Action: {:?}", result.0);
-    println!("Progress: {}", result.1);
-    println!("Message: {}", result.2);
-  }
-
-  let result = Ok(results.clone());
-  let _ = STATUS_RESULT.set(result.clone());
+      },
+      Config::default().max_retries,
+      Config::default().retry_delay,
+    ),
+  )
+  .await;
+  info!("check_updates_impl completed with result: {:?}", result);
   result
 }
-
-async fn check_updates() -> Result<String, String> {
-  let update_result = update::check_for_updates().await;
-  println!("[DEBUG] update_app() result: {:?}", update_result);
-  Ok("Updates verified".to_string())
+fn check_updates() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+  Box::pin(check_updates_impl())
 }
-
-async fn setup_environment() -> Result<(), String> {
-  Ok(())
+async fn setup_environment_impl() -> Result<String> {
+  with_timeout(Config::default().operation_timeout, async {
+    do_environment_setup()
+      .await
+      .map_err(|e| SplashError::Environment(e.to_string()))?;
+    Ok("Environment setup complete".to_string())
+  })
+  .await
 }
-async fn load_resources() -> Result<(), String> {
-  Ok(())
+fn setup_environment() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+  Box::pin(setup_environment_impl())
 }
-async fn initialize_plugins() -> Result<(), String> {
-  Ok(())
+async fn load_resources_impl() -> Result<String> {
+  with_timeout(Config::default().operation_timeout, async {
+    do_resource_loading()
+      .await
+      .map_err(|e| SplashError::Resource(e.to_string()))?;
+    Ok("Resources loaded successfully".to_string())
+  })
+  .await
 }
-async fn finalize_startup() -> Result<(), String> {
-  Ok(())
+fn load_resources() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+  Box::pin(load_resources_impl())
 }
-
-fn simple_random(min: u64, max: u64) -> u64 {
-  if max <= min {
-    return min;
+async fn initialize_plugins_impl() -> Result<String> {
+  with_timeout(Config::default().operation_timeout, async {
+    do_plugin_init()
+      .await
+      .map_err(|e| SplashError::Resource(e.to_string()))?;
+    Ok("Plugins initialized successfully".to_string())
+  })
+  .await
+}
+fn initialize_plugins() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+  Box::pin(initialize_plugins_impl())
+}
+async fn finalize_startup_impl() -> Result<String> {
+  with_timeout(Config::default().operation_timeout, async {
+    do_finalization()
+      .await
+      .map_err(|e| SplashError::Startup(e.to_string()))?;
+    Ok("Startup finalized successfully".to_string())
+  })
+  .await
+}
+fn finalize_startup() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
+  Box::pin(finalize_startup_impl())
+}
+#[derive(Default)]
+pub struct SplashState {
+  current_step: String,
+  progress: u8,
+  message: String,
+  is_completed: bool,
+  history: Vec<StatusUpdate>,
+  completed_steps: Vec<String>,
+}
+impl SplashState {
+  pub fn new() -> Self {
+    Self::default()
   }
-  let now = SystemTime::now()
-    .duration_since(UNIX_EPOCH)
-    .unwrap()
-    .as_nanos();
-  let range = max - min;
-  (now % range as u128) as u64 + min
+  pub fn update(&mut self, step: impl Into<String>, progress: u8, message: impl Into<String>) {
+    let step = step.into();
+    let message = message.into();
+    self.current_step = step.clone();
+    self.progress = progress;
+    self.message = message.clone();
+    self.is_completed = progress >= 100;
+    self.history.push(StatusUpdate {
+      step: step.clone(),
+      progress,
+      message,
+    });
+    if progress == 100 {
+      self.completed_steps.push(step);
+    }
+  }
+  pub fn handle_error(&mut self, step: impl AsRef<str>, error: impl AsRef<str>) {
+    let step = step.as_ref();
+    let error = error.as_ref();
+    info!("Handling error for step {}: {}", step, error);
+    self.update(step.to_string(), 0, format!("Error: {}", error));
+    if let Some(index) = self.completed_steps.iter().position(|s| s == step) {
+      self.completed_steps.truncate(index);
+    }
+  }
+}
+static INITIALIZATION_COMPLETE: AtomicBool = AtomicBool::new(false);
+static STATE: OnceCell<ParkingLotRwLock<SplashState>> = OnceCell::new();
+fn get_state() -> &'static ParkingLotRwLock<SplashState> {
+  STATE.get_or_init(|| ParkingLotRwLock::new(SplashState::new()))
+}
+async fn do_check_updates() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+  sleep(Duration::from_millis(500)).await;
+  Ok(())
+}
+async fn do_environment_setup() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
+{
+  sleep(Duration::from_millis(500)).await;
+  Ok(())
+}
+async fn do_resource_loading() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
+{
+  sleep(Duration::from_millis(500)).await;
+  Ok(())
+}
+async fn do_plugin_init() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+  sleep(Duration::from_millis(500)).await;
+  Ok(())
+}
+async fn do_finalization() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+  sleep(Duration::from_millis(500)).await;
+  Ok(())
+}
+async fn update_progress(step: &str, progress: u8, message: &str) -> Result<()> {
+  info!(
+    "Updating progress - Step: {}, Progress: {}%, Message: {}",
+    step, progress, message
+  );
+  let state = get_state();
+  let mut state = state.write();
+  state.update(step.to_string(), progress, message.to_string());
+  info!("Progress updated successfully");
+  Ok(())
+}
+#[doc = r" Retrieves the current initialization status"]
+#[tauri::command]
+pub async fn status() -> std::result::Result<StatusUpdate, String> {
+  async fn get_status() -> Result<StatusUpdate> {
+    if INITIALIZATION_COMPLETE.load(Ordering::SeqCst) {
+      return Ok(
+        get_state()
+          .read()
+          .history
+          .last()
+          .cloned()
+          .unwrap_or_else(|| StatusUpdate {
+            step: "Complete".into(),
+            progress: 100,
+            message: "Initialization complete".into(),
+          }),
+      );
+    }
+    process_steps().await
+  }
+  match timeout(Config::default().status_check_timeout, get_status()).await {
+    Ok(result) => result.map_err(|e| e.to_string()),
+    Err(_) => Err("Status check timed out".into()),
+  }
+}
+async fn with_timeout<T>(
+  duration: Duration,
+  operation: impl Future<Output = Result<T>>,
+) -> Result<T> {
+  timeout(duration, operation)
+    .await
+    .map_err(|_| SplashError::Timeout(format!("Operation timed out after {:?}", duration)))?
+}
+async fn retry<T, Fut, F>(operation: F, retries: u32, delay: Duration) -> Result<T>
+where
+  F: Fn() -> Fut,
+  Fut: Future<Output = Result<T>>,
+{
+  let mut attempts = 0;
+  loop {
+    match operation().await {
+      Ok(result) => return Ok(result),
+      Err(_e) if attempts < retries => {
+        attempts += 1;
+        sleep(delay).await;
+        continue;
+      }
+      Err(e) => return Err(e),
+    }
+  }
 }
