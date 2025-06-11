@@ -11,6 +11,11 @@ const math = async (a: number, b: number): Promise<number> => {
 	return sum
 }
 
+const plugin = async () => {
+	await invoke<number>('plugin', {})
+	return
+}
+
 export const Home: React.FC = () => {
 	const { bears, increasePopulation, decreasePopulation, removeAllBears } =
 		useBearContext()
@@ -120,6 +125,11 @@ export const Home: React.FC = () => {
 				</button>
 				<button className='btn btn-accent' type='button' onClick={clearAll}>
 					Clear All
+				</button>
+				<button className='btn btn-active' type='button' onClick={async () => {
+					await plugin()
+				}}>
+					Test Plugin
 				</button>
 			</div>
 		</div>
