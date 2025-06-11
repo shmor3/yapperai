@@ -1,54 +1,54 @@
-import { useEffect, useCallback, useState } from 'react'
+import { Logo } from '@client/components/logo'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
-type StatusUpdate = {
-	step: string
-	progress: number
-	message: string
-}
+type StatusUpdate = [string, number, string]
 
-const fetchStatus = async (): Promise<StatusUpdate> => {
+const fetchStatus = async (): Promise<StatusUpdate[]> => {
 	try {
-		const response = await invoke<StatusUpdate>('status')
-		console.log('Status response:', response)
-		return response
+		return await invoke<StatusUpdate[]>('status')
 	} catch (error) {
 		console.error('Error fetching status:', error)
-		return {
-			step: 'Error',
-			progress: 0,
-			message: error instanceof Error ? error.message : String(error),
-		}
+		return [['Error fetching status', 0, String(error)]]
 	}
 }
 
-function parseStepInfo(statusMsg: string) {
-	const stepMatch = statusMsg.match(
-		/^(Step\s*\d+):\s*(.+?)(?:\s*\((\d+)\/(\d+)\))?$/i,
-	)
-	if (stepMatch) {
-		return {
-			mainStep: stepMatch[1],
-			subStep: stepMatch[2],
-			subStepCurrent: stepMatch[3] ? Number.parseInt(stepMatch[3], 10) : null,
-			subStepTotal: stepMatch[4] ? Number.parseInt(stepMatch[4], 10) : null,
+const closeSplash = async () => {
+	try {
+		await invoke('close_splash')
+	} catch (error) {
+		console.error('Error closing splash screen:', error)
+		try {
+			await invoke('close_app')
+		} catch (secondError) {
+			console.error('Failed to close application:', secondError)
 		}
-	}
-	return {
-		mainStep: statusMsg,
-		subStep: '',
-		subStepCurrent: null,
-		subStepTotal: null,
 	}
 }
 
 export const Splash: React.FC = () => {
-	const [status, setStatus] = useState<StatusUpdate>({
-		step: 'Initializing...',
-		progress: 0,
-		message: 'Please wait...',
-	})
-	const [isStuck, setIsStuck] = useState(false)
-	const [_, setLoading] = useState(true)
+	const [status, setStatus] = useState<StatusUpdate>([
+		'Starting application...',
+		0,
+		'Please wait...',
+	])
+	const [isComplete, setIsComplete] = useState(false)
+	const [hasError, setHasError] = useState(false)
+	const pollingRef = useRef<NodeJS.Timeout | null>(null)
+
+	const pollStatus = useCallback(async () => {
+		const updates = await fetchStatus()
+		const last = updates[updates.length - 1]
+		setStatus(last)
+		if (last[1] === 100) {
+			setIsComplete(true)
+			return
+		}
+		if (last[0].toLowerCase().includes('error')) {
+			setHasError(true)
+			return
+		}
+	}, [])
+
 	useEffect(() => {
 		if (isComplete || hasError) {
 			const timeout = setTimeout(
@@ -112,11 +112,6 @@ export const Splash: React.FC = () => {
 						</p>
 					)}
 				</div>
-				<p className='text-sm'>
-					{isStuck
-						? 'Loading seems to be taking longer than expected...'
-						: status.message}
-				</p>
 			</div>
 		</div>
 	)
