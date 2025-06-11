@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+
 const listPlugins = async (): Promise<string[]> => {
 	const plugins = await invoke<string[]>('list_plugins')
 	return plugins
@@ -33,17 +34,6 @@ export const Plugins: React.FC = () => {
 	const [pluginArgs, setPluginArgs] = useState<string>('')
 	const [pluginResult, setPluginResult] = useState<string>('')
 	useState<boolean>(false)
-	useEffect(() => {
-		const checkForVowelsPlugin = async () => {
-			try {
-				const pluginList = await listPlugins()
-				setPlugins(pluginList)
-			} catch (error) {
-				console.error('Error checking for vowels plugin:', error)
-			}
-		}
-		checkForVowelsPlugin()
-	}, [])
 
 	const handleListPlugins = async () => {
 		try {
