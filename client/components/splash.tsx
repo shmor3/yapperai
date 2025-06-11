@@ -1,26 +1,22 @@
-import { Logo } from '@client/components/logo'
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 
-type StatusUpdate = [string, number, string]
-
-const fetchStatus = async (): Promise<StatusUpdate[]> => {
-	try {
-		return await invoke<StatusUpdate[]>('status')
-	} catch (error) {
-		console.error('Error fetching status:', error)
-		return [['Error fetching status', 0, String(error)]]
-	}
+type StatusUpdate = {
+	step: string
+	progress: number
+	message: string
 }
 
-const closeSplash = async () => {
+const fetchStatus = async (): Promise<StatusUpdate> => {
 	try {
-		await invoke('close_splash')
+		const response = await invoke<StatusUpdate>('status')
+		console.log('Status response:', response)
+		return response
 	} catch (error) {
-		console.error('Error closing splash screen:', error)
-		try {
-			await invoke('close_app')
-		} catch (secondError) {
-			console.error('Failed to close application:', secondError)
+		console.error('Error fetching status:', error)
+		return {
+			step: 'Error',
+			progress: 0,
+			message: error instanceof Error ? error.message : String(error),
 		}
 	}
 }
@@ -46,40 +42,22 @@ function parseStepInfo(statusMsg: string) {
 }
 
 export const Splash: React.FC = () => {
-	const [status, setStatus] = useState<StatusUpdate>([
-		'Starting application...',
-		0,
-		'Please wait...',
-	])
-	const [isComplete, setIsComplete] = useState(false)
-	const [hasError, setHasError] = useState(false)
-	const pollingRef = useRef<NodeJS.Timeout | null>(null)
-
-	const pollStatus = useCallback(async () => {
-		const updates = await fetchStatus()
-		const best = updates.reduce((a, b) => (b[1] > a[1] ? b : a), updates[0])
-		setStatus(best)
-		if (best[1] === 100) {
-			setIsComplete(true)
-			return
-		}
-		if (best[0].toLowerCase().includes('error')) {
-			setHasError(true)
-			return
-		}
-	}, [])
-
+	const [status, setStatus] = useState<StatusUpdate>({
+		step: 'Initializing...',
+		progress: 0,
+		message: 'Please wait...',
+	})
+	const [isStuck, setIsStuck] = useState(false)
+	const [_, setLoading] = useState(true)
 	useEffect(() => {
 		if (isComplete || hasError) {
 			const timeout = setTimeout(
-				async () => {
+				() => {
 					if (pollingRef.current) {
 						clearInterval(pollingRef.current)
 						pollingRef.current = null
 					}
-					await new Promise((resolve) => setTimeout(resolve, 5000)).then(() =>
-						closeSplash(),
-					)
+					closeSplash()
 				},
 				isComplete ? 1000 : 4000,
 			)
@@ -103,73 +81,42 @@ export const Splash: React.FC = () => {
 		return 'progress-success'
 	}
 
-	const { mainStep, subStep, subStepCurrent, subStepTotal } = parseStepInfo(
-		status[0],
-	)
-	const showSubStepProgress = subStepCurrent !== null && subStepTotal !== null
-
-	let subStepPercent = 0
-	if (
-		showSubStepProgress &&
-		typeof subStepCurrent === 'number' &&
-		typeof subStepTotal === 'number' &&
-		subStepTotal > 0
-	) {
-		subStepPercent = Math.round((subStepCurrent / subStepTotal) * 100)
-	}
-
 	return (
 		<div className='card-sm flex flex-col justify-center items-center p-7 w-full h-full bg-base-100'>
 			<figure className='px-10 pt-10 pb-6'>
 				<Logo size={96} />
 			</figure>
 			<div className='card-body items-center text-center'>
-				<h3 className='card-title text-lg mb-2'>{mainStep}</h3>
+				<h3 className='card-title text-lg mb-2'>{status[0]}</h3>
 				<div className='card-actions flex flex-col items-center w-full'>
-					{showSubStepProgress ? (
+					{status[1] > 0 && status[1] < 100 ? (
 						<>
-							<div className='flex justify-between w-56 mb-1'>
-								<p className='text-xs'>{subStep}</p>
-								<p className='text-xs font-bold'>
-									{subStepCurrent}/{subStepTotal}
-								</p>
-							</div>
 							<progress
-								className={`progress w-56 ${getProgressColor(subStepPercent)}`}
-								value={subStepPercent}
+								className={`progress w-56 ${getProgressColor(status[1])}`}
+								value={status[1]}
 								max='100'
 							/>
-							<div className='flex justify-end w-56 mt-1'>
-								<p className='text-xs font-bold'>{subStepPercent}%</p>
+							<div className='flex justify-between w-56 mt-1'>
+								<p className='text-xs'>{status[2]}</p>
+								<p className='text-xs font-bold'>{status[1]}%</p>
 							</div>
 						</>
 					) : (
-						<>
-							{status[1] > 0 && status[1] < 100 ? (
-								<>
-									<progress
-										className={`progress w-56 ${getProgressColor(status[1])}`}
-										value={status[1]}
-										max='100'
-									/>
-									<div className='flex justify-between w-56 mt-1'>
-										<p className='text-xs'>{status[2]}</p>
-										<p className='text-xs font-bold'>{status[1]}%</p>
-									</div>
-								</>
-							) : (
-								<p className='text-xs mt-2'>
-									{status[2] ||
-										(isComplete
-											? 'Startup complete!'
-											: hasError
-												? 'Startup failed'
-												: 'Starting...')}
-								</p>
-							)}
-						</>
+						<p className='text-xs mt-2'>
+							{status[2] ||
+								(isComplete
+									? 'Startup complete!'
+									: hasError
+										? 'Startup failed'
+										: 'Starting...')}
+						</p>
 					)}
 				</div>
+				<p className='text-sm'>
+					{isStuck
+						? 'Loading seems to be taking longer than expected...'
+						: status.message}
+				</p>
 			</div>
 		</div>
 	)

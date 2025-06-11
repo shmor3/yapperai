@@ -1,7 +1,8 @@
-node = "latest"
-npm = "11.4.1"
-pnpm = "latest"
-rust = "1.87.0"
+node = "23.9.0"
+npm = "11.2.0"
+pnpm = "10.7.0"
+rust = "1.86.0"
+buf = "1.50.0"
 
 [env]
 
