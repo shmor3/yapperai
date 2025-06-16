@@ -4,7 +4,9 @@ use parking_lot::RwLock as ParkingLotRwLock;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, Ordering};
+use tauri::{AppHandle, Manager};
 use tokio::time::{sleep, timeout, Duration};
+
 #[derive(Debug)]
 pub struct Config {
   operation_timeout: Duration,
@@ -177,7 +179,9 @@ impl SplashState {
       progress,
       message,
     });
-    if progress == 100 {
+    if progress >= 100 / 5 * (self.completed_steps.len() + 1) as u8
+      && !self.completed_steps.contains(&step)
+    {
       self.completed_steps.push(step);
     }
   }
@@ -190,6 +194,13 @@ impl SplashState {
       self.completed_steps.truncate(index);
     }
   }
+  pub fn get_current_status(&self) -> StatusUpdate {
+    StatusUpdate {
+      step: self.current_step.clone(),
+      progress: self.progress,
+      message: self.message.clone(),
+    }
+  }
 }
 static INITIALIZATION_COMPLETE: AtomicBool = AtomicBool::new(false);
 static STATE: OnceCell<ParkingLotRwLock<SplashState>> = OnceCell::new();
@@ -197,25 +208,25 @@ fn get_state() -> &'static ParkingLotRwLock<SplashState> {
   STATE.get_or_init(|| ParkingLotRwLock::new(SplashState::new()))
 }
 async fn do_check_updates() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(500)).await;
+  sleep(Duration::from_millis(2000)).await;
   Ok(())
 }
 async fn do_environment_setup() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
 {
-  sleep(Duration::from_millis(500)).await;
+  sleep(Duration::from_millis(2000)).await;
   Ok(())
 }
 async fn do_resource_loading() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
 {
-  sleep(Duration::from_millis(500)).await;
+  sleep(Duration::from_millis(2000)).await;
   Ok(())
 }
 async fn do_plugin_init() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(500)).await;
+  sleep(Duration::from_millis(2000)).await;
   Ok(())
 }
 async fn do_finalization() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(500)).await;
+  sleep(Duration::from_millis(2000)).await;
   Ok(())
 }
 async fn update_progress(step: &str, progress: u8, message: &str) -> Result<()> {
@@ -229,9 +240,17 @@ async fn update_progress(step: &str, progress: u8, message: &str) -> Result<()> 
   info!("Progress updated successfully");
   Ok(())
 }
-#[doc = r" Retrieves the current initialization status"]
 #[tauri::command]
-pub async fn status() -> std::result::Result<StatusUpdate, String> {
+pub fn close_splash(app: AppHandle) {
+  if let Some(splash) = app.get_webview_window("splash") {
+    let _ = splash.close();
+  }
+  if let Some(main) = app.get_webview_window("main") {
+    let _ = main.show();
+  }
+}
+#[tauri::command]
+pub async fn fetch_status() -> std::result::Result<StatusUpdate, String> {
   async fn get_status() -> Result<StatusUpdate> {
     if INITIALIZATION_COMPLETE.load(Ordering::SeqCst) {
       return Ok(
@@ -246,6 +265,10 @@ pub async fn status() -> std::result::Result<StatusUpdate, String> {
             message: "Initialization complete".into(),
           }),
       );
+    }
+    let current_state = get_state().read().get_current_status();
+    if !current_state.step.is_empty() && current_state.progress < 100 {
+      return Ok(current_state);
     }
     process_steps().await
   }
@@ -271,8 +294,9 @@ where
   loop {
     match operation().await {
       Ok(result) => return Ok(result),
-      Err(_e) if attempts < retries => {
+      Err(e) if attempts < retries => {
         attempts += 1;
+        info!("Retry attempt {} after error: {}", attempts, e);
         sleep(delay).await;
         continue;
       }

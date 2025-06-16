@@ -20,16 +20,16 @@ pub fn run() {
       plugins::call_plugin,
       plugins::list_plugins,
       plugins::unload_plugin,
-      utils::close_splash,
-      splash::status,
-      utils::greet,
-      utils::sum,
+      splash::close_splash,
+      splash::fetch_status,
       request::create,
       request::retrieve,
       request::update,
       request::delete,
       env::get_app_env,
       env::set_app_env,
+      utils::greet,
+      utils::sum,
     ])
     .run(tauri::generate_context!())
     .expect("error while running application");
