@@ -30,6 +30,8 @@ pub struct StatusUpdate {
   pub step: String,
   pub progress: u8,
   pub message: String,
+  pub done: bool,
+  pub error: Option<String>,
 }
 #[derive(Debug, thiserror::Error)]
 pub enum SplashError {
@@ -50,10 +52,8 @@ impl From<Box<dyn std::error::Error + Send + Sync>> for SplashError {
 async fn process_steps() -> Result<StatusUpdate> {
   let steps = vec![
     ("Checking Updates", check_updates()),
-    ("Setting Up Environment", setup_environment()),
-    ("Loading Resources", load_resources()),
-    ("Initializing Plugins", initialize_plugins()),
-    ("Finalizing Startup", finalize_startup()),
+    ("Getting Ready", setup_environment()),
+    ("Loading Plugins", initialize_plugins()),
   ];
   let total_steps = steps.len();
   let progress_per_step = 100 / total_steps as u8;
@@ -72,9 +72,11 @@ async fn process_steps() -> Result<StatusUpdate> {
   }
   INITIALIZATION_COMPLETE.store(true, Ordering::SeqCst);
   Ok(StatusUpdate {
-    step: "Complete".into(),
+    step: "done".into(),
     progress: 100,
-    message: "Initialization complete".into(),
+    message: "done".into(),
+    done: true,
+    error: None,
   })
 }
 async fn check_updates_impl() -> Result<String> {
@@ -118,18 +120,6 @@ async fn setup_environment_impl() -> Result<String> {
 fn setup_environment() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
   Box::pin(setup_environment_impl())
 }
-async fn load_resources_impl() -> Result<String> {
-  with_timeout(Config::default().operation_timeout, async {
-    do_resource_loading()
-      .await
-      .map_err(|e| SplashError::Resource(e.to_string()))?;
-    Ok("Resources loaded successfully".to_string())
-  })
-  .await
-}
-fn load_resources() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-  Box::pin(load_resources_impl())
-}
 async fn initialize_plugins_impl() -> Result<String> {
   with_timeout(Config::default().operation_timeout, async {
     do_plugin_init()
@@ -141,18 +131,6 @@ async fn initialize_plugins_impl() -> Result<String> {
 }
 fn initialize_plugins() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
   Box::pin(initialize_plugins_impl())
-}
-async fn finalize_startup_impl() -> Result<String> {
-  with_timeout(Config::default().operation_timeout, async {
-    do_finalization()
-      .await
-      .map_err(|e| SplashError::Startup(e.to_string()))?;
-    Ok("Startup finalized successfully".to_string())
-  })
-  .await
-}
-fn finalize_startup() -> Pin<Box<dyn Future<Output = Result<String>> + Send>> {
-  Box::pin(finalize_startup_impl())
 }
 #[derive(Default)]
 pub struct SplashState {
@@ -178,6 +156,8 @@ impl SplashState {
       step: step.clone(),
       progress,
       message,
+      done: false,
+      error: None,
     });
     if progress >= 100 / 5 * (self.completed_steps.len() + 1) as u8
       && !self.completed_steps.contains(&step)
@@ -199,6 +179,8 @@ impl SplashState {
       step: self.current_step.clone(),
       progress: self.progress,
       message: self.message.clone(),
+      done: self.is_completed,
+      error: None,
     }
   }
 }
@@ -208,25 +190,16 @@ fn get_state() -> &'static ParkingLotRwLock<SplashState> {
   STATE.get_or_init(|| ParkingLotRwLock::new(SplashState::new()))
 }
 async fn do_check_updates() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(2000)).await;
+  sleep(Duration::from_millis(500)).await;
   Ok(())
 }
 async fn do_environment_setup() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
 {
-  sleep(Duration::from_millis(2000)).await;
-  Ok(())
-}
-async fn do_resource_loading() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>
-{
-  sleep(Duration::from_millis(2000)).await;
+  sleep(Duration::from_millis(500)).await;
   Ok(())
 }
 async fn do_plugin_init() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(2000)).await;
-  Ok(())
-}
-async fn do_finalization() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(2000)).await;
+  sleep(Duration::from_millis(500)).await;
   Ok(())
 }
 async fn update_progress(step: &str, progress: u8, message: &str) -> Result<()> {
@@ -263,6 +236,8 @@ pub async fn fetch_status() -> std::result::Result<StatusUpdate, String> {
             step: "Complete".into(),
             progress: 100,
             message: "Initialization complete".into(),
+            done: true,
+            error: None,
           }),
       );
     }

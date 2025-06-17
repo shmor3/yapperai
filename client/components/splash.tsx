@@ -1,4 +1,6 @@
 import { useEffect, useCallback, useState, useRef } from 'react'
+import { Logo } from '@client/components/logo'
+
 type StatusUpdate = {
 	step: string
 	progress: number
@@ -18,9 +20,9 @@ const ABSOLUTE_TIMEOUT = 60000
 const MAX_RETRIES = 5
 export const Splash: React.FC = () => {
 	const [status, setStatus] = useState<StatusUpdate>({
-		step: 'Initializing...',
+		step: 'starting',
 		progress: 0,
-		message: 'Please wait...',
+		message: '',
 	})
 	const [isStuck, setIsStuck] = useState(false)
 	const [retryCount, setRetryCount] = useState(0)
@@ -31,7 +33,8 @@ export const Splash: React.FC = () => {
 	const lastUpdateTimeRef = useRef(Date.now())
 	const closeSplash = useCallback(async () => {
 		try {
-			await invoke('close_slash')
+			await new Promise((resolve) => setTimeout(resolve, 1000))
+			await invoke('close_splash')
 		} catch (error) {
 			console.error('Error closing splash:', error)
 		}
@@ -126,10 +129,20 @@ export const Splash: React.FC = () => {
 		}
 	}, [isStuck, stopPollingAndClose])
 	return (
-		<div className='splash-screen'>
-			<h1>{status.step}</h1>
-			<p>{status.message}</p>
-			<progress value={status.progress} max={100} />
+		<div className='card-sm flex flex-col justify-center items-center m-7 w-full h-full bg-base-100'>
+			<figure className='px-10 pt-10 mb-6'>
+				<Logo size={96} />
+			</figure>
+			<div className='card-body items-center text-center'>
+				<div className='card-actions flex flex-col items-center w-full'>
+					<p className='text-sm'>{status.step}</p>
+					<progress
+						className='progress w-56'
+						value={status.progress}
+						max='100'
+					/>
+				</div>
+			</div>
 		</div>
 	)
 }
