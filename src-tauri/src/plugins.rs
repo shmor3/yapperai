@@ -31,7 +31,7 @@ fn get_registry() -> PluginResult<std::sync::MutexGuard<'static, HashMap<String,
 pub fn plugin_init(plugin_id: String, plugin_url: String) -> Result<(), String> {
   let url = if plugin_url.is_empty() {
     format!(
-      "https://github.com/extism/plugins/releases/latest/download/{}.wasm",
+      "https://github.com/shmor3/yapperai-plugins/releases/download/v1.1.1/download/{}.wasm",
       plugin_id
     )
   } else {

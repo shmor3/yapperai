@@ -72,9 +72,9 @@ async fn process_steps() -> Result<StatusUpdate> {
   }
   INITIALIZATION_COMPLETE.store(true, Ordering::SeqCst);
   Ok(StatusUpdate {
-    step: "done".into(),
+    step: "Done".into(),
     progress: 100,
-    message: "done".into(),
+    message: "Done".into(),
     done: true,
     error: None,
   })

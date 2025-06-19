@@ -11,6 +11,12 @@ mod utils;
 pub fn run() {
   plugins::plugin_init("count_vowels".to_string(), "".to_string())
     .expect("Failed to initialize count_vowels plugin: Plugin initialization failed");
+  plugins::plugin_init("greet".to_string(), "".to_string())
+    .expect("Failed to initialize greet plugin: Plugin initialization failed");
+  plugins::plugin_init("http".to_string(), "".to_string())
+    .expect("Failed to initialize http plugin: Plugin initialization failed");
+  plugins::plugin_init("read_write".to_string(), "".to_string())
+    .expect("Failed to initialize read_write plugin: Plugin initialization failed");
   tauri::Builder::default()
     .manage(env::create_env_store())
     .menu(tauri::menu::Menu::default)
