@@ -11,16 +11,16 @@ struct Client;
 
 impl Client {
   async fn create_data(&self, data: &str) -> Result<String, String> {
-    Ok(data.to_string())
+    Ok(format!("{}", data.to_string()))
   }
   async fn retrieve_data(&self, data_id: &str) -> Result<String, String> {
-    Ok(data_id.to_string())
+    Ok(format!("{}", data_id.to_string()))
   }
   async fn update_data(&self, data: &str) -> Result<String, String> {
-    Ok(data.to_string())
+    Ok(format!("{}", data.to_string()))
   }
   async fn delete_data(&self, data_id: &str) -> Result<String, String> {
-    Ok(data_id.to_string())
+    Ok(format!("{}", data_id.to_string()))
   }
 }
 
