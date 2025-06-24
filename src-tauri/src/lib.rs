@@ -9,14 +9,8 @@ mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  plugins::plugin_init("count_vowels".to_string(), "".to_string())
-    .expect("Failed to initialize count_vowels plugin: Plugin initialization failed");
-  plugins::plugin_init("greet".to_string(), "".to_string())
-    .expect("Failed to initialize greet plugin: Plugin initialization failed");
-  plugins::plugin_init("http".to_string(), "".to_string())
-    .expect("Failed to initialize http plugin: Plugin initialization failed");
-  plugins::plugin_init("read_write".to_string(), "".to_string())
-    .expect("Failed to initialize read_write plugin: Plugin initialization failed");
+  plugins::plugin_init("ui".to_string(), "".to_string())
+    .expect("Failed to initialize ui plugin: Plugin initialization failed");
   tauri::Builder::default()
     .manage(env::create_env_store())
     .menu(tauri::menu::Menu::default)
@@ -25,6 +19,9 @@ pub fn run() {
       utils::close_app,
       plugins::call_plugin,
       plugins::list_plugins,
+      plugins::get_plugin_info,
+      plugins::get_plugin_count,
+      plugins::is_plugin_loaded,
       plugins::unload_plugin,
       splash::close_splash,
       splash::fetch_status,

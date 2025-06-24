@@ -9,6 +9,15 @@ const math = async (a: number, b: number): Promise<number> => {
 	const sum = await invoke<number>('sum', { a, b })
 	return sum
 }
+const request = async (endpoint: string, payload: string): Promise<string> => {
+	const message = {
+		version: Number('0.0.1'),
+		endpoint: endpoint,
+		payload: payload,
+	}
+	const data = await api.connrpc.retrieve(message)
+	return String(data)
+}
 export const Home: React.FC = () => {
 	const { bears, increasePopulation, decreasePopulation, removeAllBears } =
 		useBearContext()
@@ -16,16 +25,16 @@ export const Home: React.FC = () => {
 	const [name, setName] = useState<string>('')
 	const [sum, setSum] = useState<string>('')
 	const [vars, setVars] = useState<[number, number]>([0, 0])
+	const [uri, setRes] = useState<string>('')
+
 	const greet = useCallback(async () => {
 		try {
 			const message = await greeting(name)
-			const calculatedSum = await math(vars[0], vars[1])
-			setSum(calculatedSum.toString())
 			setGreetMsg(message)
 		} catch (error) {
 			setGreetMsg(`An error occurred while processing. ${error}`)
 		}
-	}, [name, vars])
+	}, [name])
 	const calculate = useCallback(async () => {
 		try {
 			const calculatedSum = await math(vars[0], vars[1])
@@ -57,15 +66,25 @@ export const Home: React.FC = () => {
 		setSum('')
 		removeAllBears()
 	}
-	const request = async () => {
-		const message = {
-			version: Number('0.0.1'),
-			endpoint: '/api/v1/greet',
-			payload: '',
+
+	const newReq = useCallback(async () => {
+		try {
+			const res = await request(uri, 'Hello World')
+			setRes(res.toString())
+		} catch (error) {
+			setRes(`An error occurred while processing. ${error}`)
 		}
-		const data = await api.connrpc.retrieve(message)
-		return { data }
+	}, [uri])
+
+	const handleReqSubmit = (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault()
+		if (!uri) {
+			setRes('Please enter an endpoint.')
+			return
+		}
+		newReq()
 	}
+
 	return (
 		<div className='flex flex-col w-full h-full items-center justify-center space-y-6'>
 			<p className='text-lg'>Bears: {bears}</p>
@@ -122,9 +141,19 @@ export const Home: React.FC = () => {
 				<button className='btn btn-accent' type='button' onClick={clearAll}>
 					Clear All
 				</button>
-				<button className='btn btn-accent' type='button' onClick={request}>
-					api
-				</button>
+			</div>
+			<div className='flex flex-row space-x-2'>
+				<form className='flex flex-row space-x-2' onSubmit={handleReqSubmit}>
+					<input
+						className='input input-bordered w-64'
+						value={uri}
+						onChange={(e) => setRes(e.currentTarget.value)}
+						placeholder='Enter a uri...'
+					/>
+					<button className='btn btn-primary' type='submit'>
+						api
+					</button>
+				</form>
 			</div>
 		</div>
 	)

@@ -1,27 +1,34 @@
 import { SidebarButton } from '@client/partials/sidebar/button'
-import { Items, getItemIndexById } from '@client/partials/sidebar/items'
+import { usePluginItems, getItemById } from '@client/partials/sidebar/items'
 import { useBearContext } from '@state/bears'
-import type React from 'react'
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router'
+
 export const Sidebar: React.FC = () => {
 	const { activeTab, handleTabChange } = useBearContext()
+	const Items = usePluginItems()
 	const [state, setState] = useState({
 		overflowItems: [] as string[],
 		showOverflow: false,
 	})
 	const sidebarRef = useRef<HTMLDivElement>(null)
+	const bottomRef = useRef<HTMLDivElement>(null)
+	const navigate = useNavigate()
+
 	useEffect(() => {
 		const updateOverflow = () => {
 			const sidebar = sidebarRef.current
 			const menuItems = sidebar?.querySelectorAll('li.menu-item')
+			const bottom = bottomRef.current
 			if (!sidebar || !menuItems) return
 			const sidebarHeight = sidebar.clientHeight
+			const bottomHeight = bottom?.clientHeight ?? 0
 			let totalHeight = 0
 			const overflowItems: string[] = []
 			menuItems.forEach((item, index) => {
 				if (index === menuItems.length - 1) return
 				totalHeight += item.clientHeight
-				if (totalHeight > sidebarHeight - 200) {
+				if (totalHeight > sidebarHeight - bottomHeight - 16) {
 					const itemId = item.getAttribute('data-item-id')
 					if (itemId && itemId !== 'home' && itemId !== 'settings')
 						overflowItems.push(itemId)
@@ -40,7 +47,11 @@ export const Sidebar: React.FC = () => {
 		}))
 	}
 	const handleNavigation = (itemId: string) => {
-		handleTabChange(getItemIndexById(itemId))
+		const item = Items.find((item) => item.id === itemId)
+		if (item) {
+			navigate(item.route)
+			handleTabChange(Items.findIndex((i) => i.id === itemId))
+		}
 	}
 	const homeItem = Items[0]
 	const pluginIcon = Items[Items.length - 1]
@@ -79,8 +90,8 @@ export const Sidebar: React.FC = () => {
 								<SidebarButton
 									id={item.id}
 									icon={item.icon}
+									type='button'
 									active={(activeTab === index + 1).toString()}
-									setActive={() => handleTabChange(index + 1)}
 									onClick={() => handleNavigation(item.id)}
 									className='h-[4rem] w-full'
 								>
@@ -102,9 +113,9 @@ export const Sidebar: React.FC = () => {
 							{state.showOverflow && (
 								<ul className='absolute bottom-full left-full ml-2 rounded-lg bg-base-300 shadow-lg z-20'>
 									{state.overflowItems.map((id) => {
-										const item = Items.find((item) => item.id === id)
+										const item = getItemById(id)
 										if (!item) return null
-										const index = getItemIndexById(id)
+										const index = Items.findIndex((item) => item.id === id)
 										return (
 											<li key={id} className='w-full'>
 												<SidebarButton
@@ -145,3 +156,5 @@ export const Sidebar: React.FC = () => {
 		</div>
 	)
 }
+
+export default Sidebar
