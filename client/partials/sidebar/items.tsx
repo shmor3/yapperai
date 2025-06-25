@@ -44,6 +44,19 @@ const staticItems: ItemType[] = [
   },
 ];
 
+const callPlugin = async <T = unknown,>(
+  pluginId: string,
+  method: string,
+  args: Record<string, unknown>
+): Promise<T> => {
+  const result = await invoke<T>("call_plugin", {
+    pluginId: pluginId,
+    method,
+    args,
+  });
+  return result;
+};
+
 const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
   const [ui, setUI] = useState<React.ReactElement | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +105,7 @@ const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
           "type" in result
         ) {
           const node = result as PluginNode;
-          const element = renderPluginNode(node);
+          const element = renderPluginNode(node, pluginId);
           setUI(element && React.isValidElement(element) ? element : null);
         }
       } catch (err) {
@@ -109,7 +122,7 @@ const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
 
   if (loading) return <div>Loading plugin UI...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
-  // if (!ui) return <div>No UI available for this plugin</div>;
+  if (!ui) return <div>No UI available for this plugin</div>;
   return <div>{ui}</div>;
 };
 
@@ -205,19 +218,55 @@ type PluginNode =
       style?: React.CSSProperties | null;
     };
 
-const pluginHandlers: Record<string, (...args: any[]) => void> = {
-  handle_input_change: (e: React.ChangeEvent<HTMLInputElement>) => {
-    alert("Input changed: " + e.target.value);
-  },
-  handle_select_change: (e: React.ChangeEvent<HTMLSelectElement>) => {
-    alert("Select changed: " + e.target.value);
-  },
-  handle_click: () => {
-    alert("Button clicked!");
-  },
-};
+function getPluginHandlers(pluginId: string) {
+  return {
+    handle_input_change: async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const payload = {
+        id: "handle_input_change",
+        data: { value: e.target.value },
+      };
+      const result = await callPlugin<string>(
+        pluginId,
+        "handle_event",
+        payload // <-- pass as object
+      );
+      return result;
+    },
+    handle_select_change: async (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const payload = {
+        id: "handle_select_change",
+        data: { value: e.target.value },
+      };
+      const result = await callPlugin<string>(
+        pluginId,
+        "handle_event",
+        payload
+      );
+      return result;
+    },
+    handle_click: async (e: React.MouseEvent<HTMLButtonElement>) => {
+      const payload = {
+        id: "handle_click",
+        data: { value: e.currentTarget.value },
+      };
+      const result = await callPlugin<string>(
+        pluginId,
+        "handle_event",
+        payload
+      );
+      return result;
+    },
+  };
+}
+function renderPluginNode(node: PluginNode, pluginId: string): React.ReactNode {
+  const pluginHandlers = getPluginHandlers(pluginId);
 
-function renderPluginNode(node: PluginNode): React.ReactNode {
+  function getHandler<K extends keyof typeof pluginHandlers>(
+    key: K | undefined
+  ): (typeof pluginHandlers)[K] | undefined {
+    return key && key in pluginHandlers ? pluginHandlers[key as K] : undefined;
+  }
+
   switch (node.type) {
     case "container":
       return (
@@ -230,7 +279,7 @@ function renderPluginNode(node: PluginNode): React.ReactNode {
             ...(node.style || {}),
           }}
         >
-          {node.children.map(renderPluginNode)}
+          {node.children.map((child) => renderPluginNode(child, pluginId))}
         </div>
       );
     case "text":
@@ -248,9 +297,9 @@ function renderPluginNode(node: PluginNode): React.ReactNode {
           value={node.value ?? ""}
           style={node.style || {}}
           onChange={
-            node.onChange && pluginHandlers[node.onChange]
-              ? pluginHandlers[node.onChange]
-              : undefined
+            getHandler(
+              node.onChange as keyof typeof pluginHandlers
+            ) as React.ChangeEventHandler<HTMLInputElement>
           }
         />
       );
@@ -261,9 +310,9 @@ function renderPluginNode(node: PluginNode): React.ReactNode {
           value={node.selected}
           style={node.style || {}}
           onChange={
-            node.onChange && pluginHandlers[node.onChange]
-              ? pluginHandlers[node.onChange]
-              : undefined
+            getHandler(
+              node.onChange as keyof typeof pluginHandlers
+            ) as React.ChangeEventHandler<HTMLSelectElement>
           }
         >
           {node.options.map((opt) => (
@@ -280,8 +329,11 @@ function renderPluginNode(node: PluginNode): React.ReactNode {
           style={node.style || {}}
           disabled={!!node.disabled}
           onClick={
-            node.onClick && pluginHandlers[node.onClick]
-              ? pluginHandlers[node.onClick]
+            typeof node.onClick === "string" &&
+            pluginHandlers[node.onClick as keyof typeof pluginHandlers]
+              ? (pluginHandlers[
+                  node.onClick as keyof typeof pluginHandlers
+                ] as React.MouseEventHandler<HTMLButtonElement>)
               : undefined
           }
         >
