@@ -4,7 +4,7 @@ interface SidebarButtonProps {
 	children?: ReactNode
 	id: string
 	icon: ReactNode
-	active: string
+	activeId: string
 	setActive: (value: string) => void
 	className?: string
 	showLabel?: boolean
@@ -15,13 +15,13 @@ export function SidebarButton({
 	children,
 	id,
 	icon,
-	active,
+	activeId,
 	setActive,
 	className = '',
 	showLabel = false,
 	onClick,
 }: SidebarButtonProps) {
-	const isActive = active === id
+	const isActive = activeId === id
 	const handleClick = () => {
 		setActive(id)
 		if (onClick) onClick()

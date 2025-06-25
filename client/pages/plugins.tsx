@@ -1,5 +1,4 @@
 import { useState } from 'react'
-
 interface PluginMetadata {
 	name: string
 	version: string
@@ -12,26 +11,22 @@ interface PluginMetadata {
 	keywords: string[]
 	api_version: string
 }
-
 interface PluginManifest {
 	metadata: PluginMetadata
 	capabilities: string[]
 	ui_available: boolean
 	event_handlers: string[]
 }
-
 interface LoadedPlugin {
 	id: string
 	metadata?: PluginMetadata
 	manifest?: PluginManifest
 	hasUI: boolean
 }
-
 const listPlugins = async (): Promise<string[]> => {
 	const plugins = await invoke<string[]>('list_plugins')
 	return plugins
 }
-
 const unloadPlugin = async (pluginId: string): Promise<boolean> => {
 	try {
 		await invoke<void>('unload_plugin', {
@@ -43,7 +38,6 @@ const unloadPlugin = async (pluginId: string): Promise<boolean> => {
 		return false
 	}
 }
-
 const callPlugin = async <T = unknown>(
 	pluginId: string,
 	method: string,
@@ -56,7 +50,6 @@ const callPlugin = async <T = unknown>(
 	})
 	return result
 }
-
 const getPluginMetadata = async (
 	pluginId: string,
 ): Promise<PluginMetadata | null> => {
@@ -72,7 +65,6 @@ const getPluginMetadata = async (
 		return null
 	}
 }
-
 const getPluginManifest = async (
 	pluginId: string,
 ): Promise<PluginManifest | null> => {
@@ -88,11 +80,9 @@ const getPluginManifest = async (
 		return null
 	}
 }
-
 interface PluginsProps {
 	onPluginsChange?: (plugins: LoadedPlugin[]) => void
 }
-
 export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 	const [plugins, setPlugins] = useState<string[]>([])
 	const [loadedPlugins, setLoadedPlugins] = useState<LoadedPlugin[]>([])
@@ -101,16 +91,13 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 	const [pluginArgs, setPluginArgs] = useState<string>('')
 	const [pluginResult, setPluginResult] = useState<string>('')
 	const [loading, setLoading] = useState<boolean>(false)
-
 	const loadPluginDetails = async (
 		pluginIds: string[],
 	): Promise<LoadedPlugin[]> => {
 		const pluginDetails: LoadedPlugin[] = []
-
 		for (const id of pluginIds) {
 			const metadata = await getPluginMetadata(id)
 			const manifest = await getPluginManifest(id)
-
 			pluginDetails.push({
 				id,
 				metadata: metadata || undefined,
@@ -118,23 +105,16 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 				hasUI: manifest?.ui_available || false,
 			})
 		}
-
 		return pluginDetails
 	}
-
 	const handleListPlugins = async () => {
 		setLoading(true)
 		try {
 			const pluginList = await listPlugins()
 			setPlugins(pluginList)
-
-			// Load detailed plugin information
 			const detailedPlugins = await loadPluginDetails(pluginList)
 			setLoadedPlugins(detailedPlugins)
-
-			// Notify parent component about plugin changes
 			onPluginsChange?.(detailedPlugins)
-
 			setPluginResult(
 				`Found ${pluginList.length} plugins: ${pluginList.join(', ')}`,
 			)
@@ -144,19 +124,15 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 			setLoading(false)
 		}
 	}
-
 	const handleUnloadPlugin = async () => {
 		try {
 			if (!selectedPlugin) {
 				setPluginResult('Please select a plugin to unload')
 				return
 			}
-
 			const result = await unloadPlugin(selectedPlugin)
 			setPluginResult(`Unload plugin result: ${result ? 'Success' : 'Failed'}`)
-
 			if (result) {
-				// Refresh plugin list after successful unload
 				await handleListPlugins()
 				setSelectedPlugin('')
 			}
@@ -164,7 +140,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 			setPluginResult(`Error unloading plugin: ${error}`)
 		}
 	}
-
 	const handleCallPlugin = async () => {
 		try {
 			if (!selectedPlugin) {
@@ -175,7 +150,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 				setPluginResult('Please enter a method name')
 				return
 			}
-
 			let parsedArgs = {}
 			try {
 				parsedArgs = pluginArgs ? JSON.parse(pluginArgs) : {}
@@ -183,12 +157,10 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 				setPluginResult(`Invalid JSON arguments: ${e}`)
 				return
 			}
-
 			console.log(
 				`Calling plugin: ${selectedPlugin}, method: ${pluginMethod}, args:`,
 				parsedArgs,
 			)
-
 			const result = await callPlugin(selectedPlugin, pluginMethod, parsedArgs)
 			console.log('Plugin call result:', result)
 			setPluginResult(`Plugin call result: ${JSON.stringify(result, null, 2)}`)
@@ -197,24 +169,20 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 			setPluginResult(`Error calling plugin: ${error}`)
 		}
 	}
-
 	const selectedPluginDetails = loadedPlugins.find(
 		(p) => p.id === selectedPlugin,
 	)
-
 	return (
 		<div className='flex flex-col w-full h-full items-center justify-center space-y-6 p-6'>
 			<div className='flex flex-col space-y-4 w-full max-w-4xl'>
 				<div className='border p-4 rounded-lg'>
 					<h3 className='text-xl font-bold mb-4'>Plugin Management</h3>
-
-					<div className='bg-gray-100 p-3 rounded mb-4 min-h-[100px]'>
+					<div className='p-3 rounded mb-4 min-h-[100px]'>
 						<p className='text-sm font-medium mb-2'>Status:</p>
 						<p className='text-sm whitespace-pre-wrap'>
 							{pluginResult || 'Plugin operations will show results here'}
 						</p>
 					</div>
-
 					<div className='flex flex-row space-x-2 mb-4'>
 						<button
 							className='btn btn-primary'
@@ -225,7 +193,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 							{loading ? 'Loading...' : 'Refresh Plugins'}
 						</button>
 					</div>
-
 					{plugins.length > 0 && (
 						<div className='flex flex-col space-y-4'>
 							<div>
@@ -247,9 +214,8 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 									))}
 								</select>
 							</div>
-
 							{selectedPluginDetails && (
-								<div className='bg-blue-50 p-4 rounded-lg'>
+								<div className='p-4 rounded-lg'>
 									<h4 className='font-semibold mb-2'>Plugin Details:</h4>
 									<div className='grid grid-cols-2 gap-2 text-sm'>
 										<div>
@@ -284,7 +250,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 									)}
 								</div>
 							)}
-
 							<div className='flex flex-row space-x-2'>
 								<button
 									className='btn btn-warning'
@@ -295,7 +260,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 									Unload Plugin
 								</button>
 							</div>
-
 							<div className='border-t pt-4'>
 								<h4 className='font-semibold mb-3'>Call Plugin Method:</h4>
 								<div className='flex flex-col space-y-2'>
@@ -325,8 +289,6 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 						</div>
 					)}
 				</div>
-
-				{/* Plugin List Summary */}
 				{loadedPlugins.length > 0 && (
 					<div className='border p-4 rounded-lg'>
 						<h4 className='font-semibold mb-3'>Loaded Plugins Summary:</h4>
@@ -334,7 +296,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
 							{loadedPlugins.map((plugin) => (
 								<div
 									key={plugin.id}
-									className='flex items-center justify-between p-2 bg-gray-50 rounded'
+									className='flex items-center justify-between p-2rounded'
 								>
 									<div className='flex items-center space-x-3'>
 										{plugin.metadata?.logo && (
