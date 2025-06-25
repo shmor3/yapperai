@@ -2,7 +2,6 @@ import { SidebarButton } from '@client/partials/sidebar/button'
 import { usePluginItems, getItemById } from '@client/partials/sidebar/items'
 import { useBearContext } from '@state/bears'
 import { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router'
 
 export const Sidebar: React.FC = () => {
 	const { activeTab, handleTabChange } = useBearContext()
@@ -13,7 +12,6 @@ export const Sidebar: React.FC = () => {
 	})
 	const sidebarRef = useRef<HTMLDivElement>(null)
 	const bottomRef = useRef<HTMLDivElement>(null)
-	const navigate = useNavigate()
 
 	useEffect(() => {
 		const updateOverflow = () => {
@@ -49,7 +47,6 @@ export const Sidebar: React.FC = () => {
 	const handleNavigation = (itemId: string) => {
 		const item = Items.find((item) => item.id === itemId)
 		if (item) {
-			navigate(item.route)
 			handleTabChange(Items.findIndex((i) => i.id === itemId))
 		}
 	}
@@ -90,8 +87,8 @@ export const Sidebar: React.FC = () => {
 								<SidebarButton
 									id={item.id}
 									icon={item.icon}
-									type='button'
 									active={(activeTab === index + 1).toString()}
+									setActive={() => handleTabChange(index + 1)}
 									onClick={() => handleNavigation(item.id)}
 									className='h-[4rem] w-full'
 								>
