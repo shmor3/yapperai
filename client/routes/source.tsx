@@ -3,7 +3,7 @@ import { Content } from '@client/partials/content'
 import { Footer } from '@client/partials/footer'
 import { Header } from '@client/partials/header'
 import { Sidebar } from '@client/partials/sidebar'
-import { usePluginItems, getItemById } from '@client/partials/sidebar/items'
+import { usePluginItems } from '@client/partials/sidebar/items'
 import { useBearContext } from '@state/bears'
 import type { Route } from '@rr/routes/+types/source'
 import { TitleBar } from '@client/components/titlebar'
@@ -13,9 +13,9 @@ import { useEffect } from 'react'
 export default function Component({ loaderData }: Route.ComponentProps) {
 	const { activeTab } = useBearContext()
 	const items = usePluginItems()
-	const activeItem = getItemById(String(activeTab)) || items[0]
+	const activeItem =
+		items.find((item) => item.id === String(activeTab)) || items[0]
 	const ActiveComponent = activeItem?.component
-
 	if (loaderData.ready) {
 		console.log('ok')
 	}
