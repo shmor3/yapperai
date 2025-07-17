@@ -1,6 +1,6 @@
 import { redirect } from 'react-router'
 
-export const NotFound = () => {
+export const NotFound: React.FC = () => {
 	return (
 		<div className='flex min-h-screen flex-col items-center justify-center'>
 			<h1 className='mb-4 text-6xl font-bold text-neutral'>404</h1>
@@ -11,5 +11,3 @@ export const NotFound = () => {
 		</div>
 	)
 }
-
-export default NotFound
