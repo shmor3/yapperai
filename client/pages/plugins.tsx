@@ -23,11 +23,9 @@ interface LoadedPlugin {
   manifest?: PluginManifest;
   hasUI: boolean;
 }
-const initPlugins = async (): Promise<string[]> => {
-  const pluginId = 'ui'
-  const pluginUrl = ''
+const initPlugins = async (pluginId = '', pluginUrl = ''): Promise<string[]> => {
   console.log(`Initializing plugin: ${pluginId} from URL: ${pluginUrl}`);
-  return invoke('plugin_init', { pluginId: pluginId, pluginUrl: pluginUrl })
+  return invoke('plugin_init', { pluginId: pluginId, pluginUrl: pluginUrl });
 };
 
 const listPlugins = async (): Promise<string[]> => {
@@ -98,6 +96,9 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
   const [pluginArgs, setPluginArgs] = useState<string>("");
   const [pluginResult, setPluginResult] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [id, setId] = useState<string>("count_vowels");
+  const [url, setUrl] = useState<string>("");
+
   const loadPluginDetails = async (
     pluginIds: string[]
   ): Promise<LoadedPlugin[]> => {
@@ -117,7 +118,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
   const handleListPlugins = async () => {
     setLoading(true);
     try {
-      await initPlugins()
+      await initPlugins(id, url)
       const pluginList = await listPlugins();
       setPlugins(pluginList);
       const detailedPlugins = await loadPluginDetails(pluginList);
@@ -225,7 +226,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
               </div>
               {selectedPluginDetails && (
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Plugin Details:</h4>
+                  <h4 className="font-semibold mb-2 text-emerald-600">Plugin Details:</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm text-emerald-600">
                     <div>
                       <strong>Name:</strong>{" "}
@@ -339,6 +340,20 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
             </div>
           </div>
         )}
+        <div className="border p-4 rounded-lg">
+          <input
+            className="input input-bordered w-full"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Plugin URL"
+          />
+          <input
+            className="input input-bordered w-full"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            placeholder="Plugin ID"
+          />
+        </div>
       </div>
     </div>
   );
