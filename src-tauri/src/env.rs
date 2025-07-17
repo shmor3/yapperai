@@ -1,15 +1,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Mutex};
 use tauri::State;
 pub struct EnvStore {
-  store: Arc<Mutex<BTreeMap<String, String>>>,
+  store: Mutex<BTreeMap<String, String>>,
 }
 impl EnvStore {
   pub fn new() -> Self {
     EnvStore {
-      store: Arc::new(Mutex::new(BTreeMap::new())),
+      store: Mutex::new(BTreeMap::new()),
     }
   }
   pub fn get(&self, key: &str) -> Option<String> {
