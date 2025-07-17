@@ -40,3 +40,5 @@ src-tauri/target/
 src-tauri/gen/schemas
 
 .history
+
+Cargo.lock
