@@ -2,9 +2,9 @@
 	"name": "yapperai",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@10.12.1",
+	"packageManager": "pnpm@10.13.1",
 	"engines": {
-		"node": "23.9.0"
+		"node": "24.4.0"
 	},
 	"globals": {
 		"react": "React"
