@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+// use crate::ext::extism_init;
 use extism::*;
 use extism_convert::Json;
 use once_cell::sync::Lazy;
@@ -62,11 +63,17 @@ pub struct LoadedPlugin {
   pub has_ui: bool,
 }
 
-#[tauri::command]
-pub fn plugin_init(plugin_id: String, plugin_url: String) -> Result<(), String> {
+#[tauri::command(async)]
+pub async fn plugin_init(plugin_id: String, plugin_url: String) -> Result<(), String> {
   if plugin_id.trim().is_empty() {
     return Err("Plugin ID cannot be empty".to_string());
   }
+
+  let mut registry = get_registry().map_err(|e| e.to_string())?;
+  if registry.contains_key(&plugin_id) {
+    return Ok(());
+  }
+
   let url = if plugin_url.is_empty() {
     format!(
       "https://github.com/shmor3/yapperai-plugins/releases/download/v1.1.1/{}.wasm",
@@ -82,10 +89,7 @@ pub fn plugin_init(plugin_id: String, plugin_url: String) -> Result<(), String> 
   let manifest = Manifest::new([wasm_url]);
   let plugin = Plugin::new(&manifest, [], true)
     .map_err(|e| format!("Failed to create plugin {}: {}", plugin_id, e))?;
-  let mut registry = get_registry().map_err(|e| e.to_string())?;
-  if registry.contains_key(&plugin_id) {
-    return Err(format!("Plugin '{}' is already initialized", plugin_id));
-  }
+
   registry.insert(plugin_id, plugin);
   Ok(())
 }

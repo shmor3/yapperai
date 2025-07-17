@@ -23,6 +23,13 @@ interface LoadedPlugin {
   manifest?: PluginManifest;
   hasUI: boolean;
 }
+const initPlugins = async (): Promise<string[]> => {
+  const pluginId = 'ui'
+  const pluginUrl = ''
+  console.log(`Initializing plugin: ${pluginId} from URL: ${pluginUrl}`);
+  return invoke('plugin_init', { pluginId: pluginId, pluginUrl: pluginUrl })
+};
+
 const listPlugins = async (): Promise<string[]> => {
   const plugins = await invoke<string[]>("list_plugins");
   return plugins;
@@ -110,6 +117,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
   const handleListPlugins = async () => {
     setLoading(true);
     try {
+      await initPlugins()
       const pluginList = await listPlugins();
       setPlugins(pluginList);
       const detailedPlugins = await loadPluginDetails(pluginList);
@@ -178,7 +186,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
       <div className="flex flex-col space-y-4 w-full max-w-4xl">
         <div className="border p-4 rounded-lg">
           <h3 className="text-xl font-bold mb-4">Plugin Management</h3>
-          <div className="bg-gray-100 p-3 rounded mb-4 min-h-[100px]">
+          <div className="bg-gray-100 p-3 rounded mb-4 min-h-[100px] text-emerald-600">
             <p className="text-sm font-medium mb-2">Status:</p>
             <p className="text-sm whitespace-pre-wrap">
               {pluginResult || "Plugin operations will show results here"}
@@ -218,7 +226,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
               {selectedPluginDetails && (
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Plugin Details:</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="grid grid-cols-2 gap-2 text-sm text-emerald-600">
                     <div>
                       <strong>Name:</strong>{" "}
                       {selectedPluginDetails.metadata?.name ||
@@ -293,7 +301,7 @@ export const Plugins: React.FC<PluginsProps> = ({ onPluginsChange }) => {
         {loadedPlugins.length > 0 && (
           <div className="border p-4 rounded-lg">
             <h4 className="font-semibold mb-3">Loaded Plugins Summary:</h4>
-            <div className="grid gap-2">
+            <div className="grid gap-2 text-emerald-600">
               {loadedPlugins.map((plugin) => (
                 <div
                   key={plugin.id}
