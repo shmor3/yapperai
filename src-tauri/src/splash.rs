@@ -1,3 +1,5 @@
+use crate::plugins::plugin_init;
+
 use log::{error, info};
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock as ParkingLotRwLock;
@@ -199,7 +201,7 @@ async fn do_environment_setup() -> std::result::Result<(), Box<dyn std::error::E
   Ok(())
 }
 async fn do_plugin_init() -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  sleep(Duration::from_millis(500)).await;
+  let _ = plugin_init("react-image".to_string(), "".to_string()).await;
   Ok(())
 }
 async fn update_progress(step: &str, progress: u8, message: &str) -> Result<()> {
