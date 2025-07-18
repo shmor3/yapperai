@@ -140,7 +140,7 @@ pub fn get_plugin_info(plugin_id: String) -> Result<LoadedPlugin, String> {
       Err(_) => None,
     };
 
-  let has_ui = plugin.call::<_, &[u8]>("get_ui", b"{}".to_vec()).is_ok();
+  let has_ui = plugin.call::<_, &[u8]>("render", b"{}".to_vec()).is_ok();
 
   Ok(LoadedPlugin {
     id: plugin_id,

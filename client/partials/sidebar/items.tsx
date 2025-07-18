@@ -71,7 +71,7 @@ const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
         setError(null);
         const result = await invoke<unknown>("call_plugin", {
           pluginId,
-          method: "get_ui",
+          method: "render",
           args: {},
         });
         if (cancelled) return;
@@ -132,7 +132,8 @@ export function usePluginItems(): ItemType[] {
   const refreshFromBackend = useCallback(async () => {
     try {
       const ids: string[] = await invoke("list_plugins");
-      const plugins: LoadedPlugin[] = await Promise.all(
+
+      const plugins: LoadedPlugin[] = (await Promise.all(
         ids.map(async (id) => {
           try {
             const plugin = await invoke<LoadedPlugin>("get_plugin_info", {
@@ -144,7 +145,9 @@ export function usePluginItems(): ItemType[] {
             return null;
           }
         })
-      ).then((arr) => arr.filter((p): p is LoadedPlugin => p !== null));
+      )).filter((p): p is LoadedPlugin => p !== null);
+
+
       const pluginItems: ItemType[] = plugins
         .filter((plugin) => plugin.has_ui)
         .map((plugin) => ({
