@@ -1,6 +1,7 @@
+import { Chat } from '@client/pages/chat'
 import { Home } from "@client/pages/home";
 import { Plugins } from "@client/pages/plugins";
-import { HomeIcon, PackageIcon, PlugIcon } from "@primer/octicons-react";
+import { HomeIcon, PackageIcon, PlugIcon, CommentIcon } from "@primer/octicons-react";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface PluginMetadata {
@@ -35,6 +36,11 @@ const staticItems: ItemType[] = [
     component: Home,
     icon: <HomeIcon className="fill-current" />,
     title: "Home",
+  },
+  {
+    id: "chat",
+    component: Chat,
+    icon: <CommentIcon className="fill-current" />,
   },
   {
     id: "plugins",
@@ -78,27 +84,22 @@ const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
         if (
           result &&
           typeof result === "object" &&
-          (result as any).type === "wasm"
-        ) {
+          (result as { type: string }).type === "wasm"        ) {
           setUI(<div ref={wasmContainerRef} />);
           setTimeout(() => {
             if (wasmContainerRef.current) {
               try {
-                const mountFn = eval((result as any).mountScript);
+                const mountFn = new Function((result as { mountScript: string }).mountScript);
                 if (typeof mountFn === "function") {
                   mountFn(wasmContainerRef.current);
                 } else {
                   setError("Invalid mountScript for WASM plugin");
                 }
               } catch (e) {
-                setError("Failed to mount WASM plugin: " + e);
+                setError(`Failed to mount WASM plugin: ${e}`);
               }
             }
           }, 0);
-        } else if (typeof result === "string") {
-          setUI(<div dangerouslySetInnerHTML={{ __html: result }} />);
-        } else if (React.isValidElement(result)) {
-          setUI(result);
         } else if (
           typeof result === "object" &&
           result !== null &&
@@ -107,6 +108,8 @@ const PluginUIRenderer: React.FC<{ pluginId: string }> = ({ pluginId }) => {
           const node = result as PluginNode;
           const element = renderPluginNode(node, pluginId);
           setUI(element && React.isValidElement(element) ? element : null);
+        } else {
+          setUI(<div>{result as string}</div>);
         }
       } catch (err) {
         if (!cancelled) setError(`Failed to load plugin UI: ${err}`);
@@ -329,6 +332,7 @@ function renderPluginNode(node: PluginNode, pluginId: string): React.ReactNode {
       return (
         <button
           key={node.id}
+          type="button"
           style={node.style || {}}
           disabled={!!node.disabled}
           onClick={
